@@ -75,7 +75,7 @@ class CustomDDPM(L.LightningModule):
         fake_image = self(categorical_conds, continuous_conds)
         print(f".... {real_image.dtype} / {real_image.size()}")
         print(f".... {fake_image.dtype} / {fake_image.size()}")
-        print(f"...{min(fake_image)} / {max(fake_image)}")
+        print(f"...{fake_image.min()} / {fake_image.max()}")
         print(f"...{fake_image.numpy().size()}")
         fake_image = torch.Tensor(colour_quantisation(fake_image.cpu().numpy()), dtype=torch.uint8)
         fid = get_fid(fake_image, real_image)
