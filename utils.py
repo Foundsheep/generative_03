@@ -148,7 +148,6 @@ def colour_quantisation(arr_original):
     colours = [BACKGROUND, LOWER, MIDDLE, RIVET, UPPER]
 
     print(f"...before quantisation: {len(np.unique(arr)) = }")
-    print(f"...before shape : {arr_original.shape}")
     for w in range(arr.shape[0]):
         for h in range(arr.shape[1]):
             max_diff = 255 * 3
@@ -161,7 +160,6 @@ def colour_quantisation(arr_original):
             # 있는지 확인
             matching_flag = False
             for c in colours:
-                print(f"............. {current_pixel = } / {c = }")
                 if (current_pixel == c).all():
                     matching_flag = True
             if matching_flag:
