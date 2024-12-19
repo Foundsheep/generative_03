@@ -8,6 +8,7 @@ import json
 import datetime
 from PIL import Image
 import numpy as np
+from copy import deepcopy
 
 def get_scheduler(scheduler_name):
     scheduler = None
@@ -126,3 +127,64 @@ def resize_to_original_ratio(images: np.ndarray, to_h: int, to_w: int) -> np.nda
         out = resize_func(image=img)["image"]
         result.append(out)
     return np.array(result)
+
+
+BACKGROUND = [0, 0, 0]
+LOWER = [255, 96, 55]
+MIDDLE = [221, 255, 51]
+RIVET = [61, 245, 61]
+UPPER = [61, 61, 245]
+COLOUR_NAMES = {
+    "BACKGROUND": BACKGROUND,
+    "LOWER": LOWER,
+    "MIDDLE": MIDDLE,
+    "RIVET": RIVET,
+    "UPPER": UPPER,
+    }
+RIVET_DIAMETER = 7.75
+
+def colour_quantisation(arr_original):
+    arr = deepcopy(arr_original)
+    colours = [BACKGROUND, LOWER, MIDDLE, RIVET, UPPER]
+
+    print(f"...before quantisation: {len(np.unique(arr)) = }")
+    for w in range(arr.shape[0]):
+        for h in range(arr.shape[1]):
+            max_diff = 255 * 3
+            temp_diff = 0
+            current_pixel = arr[w, h]
+            quantised_pixel = [255, 255, 255]
+            set_channel_idx = None
+            # print(current_pixel)
+            
+            # 있는지 확인
+            matching_flag = False
+            for c in colours:
+                if (current_pixel == c).all():
+                    matching_flag = True
+            if matching_flag:
+                continue       
+                    
+            for colour_idx, c in enumerate(colours):
+                # print(f"[{COLOUR_NAMES[colour_idx]}] : {c}")
+                
+                for channel_idx in range(arr.shape[2]):
+                    temp_diff += np.abs(current_pixel[channel_idx] - c[channel_idx])
+                    # print(f"{temp_diff = }")
+                
+                if temp_diff == 0:
+                    continue
+                
+                elif temp_diff < max_diff:
+                    # print(f"It's smaller!, [{colour_idx}] colour, [{COLOUR_NAMES[colour_idx]}]")
+                    max_diff = temp_diff
+                    quantised_pixel = colours[colour_idx]
+                    set_channel_idx = colour_idx
+                
+                temp_diff = 0
+                # print(f"[{max_diff = }]")
+            arr[w, h] = quantised_pixel
+            # print(f"before: {current_pixel}, after: {quantised_pixel} -> [{COLOUR_NAMES[set_channel_idx]}]")
+
+    print(f"...after quantisation: {len(np.unique(arr)) = }")
+    return arr
