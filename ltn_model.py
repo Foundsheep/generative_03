@@ -74,7 +74,7 @@ class CustomDDPM(L.LightningModule):
         real_image, categorical_conds, continuous_conds = self.unfold_batch(batch)
         real_image.to(dtype=torch.uint8)
         fake_image = self(categorical_conds, continuous_conds, to_save_fig=False)
-        fake_image = torch.Tensor[
+        fake_image = torch.Tensor([
             torch.Tensor(
                 colour_quantisation(
                     denormalise_from_minus_one_to_255(f_img)
