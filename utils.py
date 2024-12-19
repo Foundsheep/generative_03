@@ -190,4 +190,4 @@ def colour_quantisation(arr_original):
     return arr
 
 def denormalise_from_minus_one_to_255(x: torch.Tensor) -> torch.Tensor:
-    return ((x + 1) * 127.5).to(dtype=torch.uint8)
+    return ((x + 1) * 127.5).to(dtype=torch.uint16)

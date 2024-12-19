@@ -75,12 +75,15 @@ class CustomDDPM(L.LightningModule):
         real_image.to(dtype=torch.uint8)
         fake_image = self(categorical_conds, continuous_conds)
         fake_image = [
-            colour_quantisation(
-                denormalise_from_minus_one_to_255(f_img)
-                .cpu()
-                .numpy()
-                .transpose(1, 2, 0)
+            torch.Tensor(
+                colour_quantisation(
+                    denormalise_from_minus_one_to_255(f_img)
+                    .cpu()
+                    .transpose(1, 2, 0)
+                )
             )
+            .permute(2, 0, 1)
+            .to(dtype=torch.uint8)
             for f_img in fake_image
         ]
         fid = get_fid(fake_image, real_image)
