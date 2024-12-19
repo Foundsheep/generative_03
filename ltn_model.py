@@ -73,7 +73,7 @@ class CustomDDPM(L.LightningModule):
     def validation_step(self, batch):
         real_image, categorical_conds, continuous_conds = self.unfold_batch(batch)
         fake_image = self(categorical_conds, continuous_conds)
-        fake_image = torch.Tensor(colour_quantisation(fake_image.numpy()), dtype=torch.uint8)
+        fake_image = torch.Tensor(colour_quantisation(fake_image.cpu().numpy()), dtype=torch.uint8)
         fid = get_fid(fake_image, real_image)
         loss = self.loss_fn(fake_image, real_image)
         self.log("val_loss", loss, prog_bar=True, on_epoch=True)
