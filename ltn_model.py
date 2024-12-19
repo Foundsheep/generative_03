@@ -1,7 +1,7 @@
 import torch
 import lightning as L
 from diffusers import UNet2DModel
-from utils import get_scheduler, normalise_to_zero_and_one_from_minus_one, resize_to_original_ratio, save_image, get_fid, colour_quantisation
+from utils import *
 from tqdm import tqdm
 
 class CustomDDPM(L.LightningModule):
@@ -73,11 +73,15 @@ class CustomDDPM(L.LightningModule):
     def validation_step(self, batch):
         real_image, categorical_conds, continuous_conds = self.unfold_batch(batch)
         fake_image = self(categorical_conds, continuous_conds)
-        print(f".... {real_image.dtype} / {real_image.size()}")
-        print(f".... {fake_image.dtype} / {fake_image.size()}")
-        print(f"...{fake_image.min()} / {fake_image.max()}")
-        print(f"...{fake_image.numpy().size()}")
-        fake_image = torch.Tensor(colour_quantisation(fake_image.cpu().numpy()), dtype=torch.uint8)
+        fake_image = [
+            colour_quantisation(
+                denormalise_from_minus_one_to_255(f_img)
+                .cpu()
+                .numpy()
+                .transpose(1, 2, 0)
+            )
+            for f_img in fake_image
+        ]
         fid = get_fid(fake_image, real_image)
         loss = self.loss_fn(fake_image, real_image)
         self.log("val_loss", loss, prog_bar=True, on_epoch=True)
