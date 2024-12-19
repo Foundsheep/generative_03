@@ -73,13 +73,14 @@ class CustomDDPM(L.LightningModule):
     def validation_step(self, batch):
         real_image, categorical_conds, continuous_conds = self.unfold_batch(batch)
         real_image.to(dtype=torch.uint8)
-        fake_image = self(categorical_conds, continuous_conds)
+        fake_image = self(categorical_conds, continuous_conds, to_save_fig=False)
         fake_image = [
             torch.Tensor(
                 colour_quantisation(
                     denormalise_from_minus_one_to_255(f_img)
                     .cpu()
                     .permute(1, 2, 0)
+                    .numpy()
                 )
             )
             .permute(2, 0, 1)
@@ -97,7 +98,7 @@ class CustomDDPM(L.LightningModule):
             "lr_scheduler": self.lr_scheduler
         }
     
-    def forward(self, categorical_conds, continuous_conds):
+    def forward(self, categorical_conds, continuous_conds, to_save_fig=True):
         self.inference_scheduler.set_timesteps(self.inference_num_steps)
         
         image = torch.randn(
@@ -119,7 +120,8 @@ class CustomDDPM(L.LightningModule):
             )
             image = self.inference_scheduler.step(outs.sample, t, image).prev_sample
         
-        self.save_generated_image(image)
+        if to_save_fig:
+            self.save_generated_image(image)
         return image
         
     def count_parameters(self):
