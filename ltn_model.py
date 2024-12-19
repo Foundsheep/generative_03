@@ -86,7 +86,7 @@ class CustomDDPM(L.LightningModule):
             .permute(2, 0, 1)
             .to(dtype=torch.uint8)
             for f_img in fake_image
-        ]
+        ])
         print(f"... {fake_image.dtype = } / {real_image.dtype = }")
         fid = get_fid(fake_image, real_image)
         loss = self.loss_fn(fake_image, real_image)
