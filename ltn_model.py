@@ -79,7 +79,7 @@ class CustomDDPM(L.LightningModule):
                 colour_quantisation(
                     denormalise_from_minus_one_to_255(f_img)
                     .cpu()
-                    .transpose(1, 2, 0)
+                    .permute(1, 2, 0)
                 )
             )
             .permute(2, 0, 1)
