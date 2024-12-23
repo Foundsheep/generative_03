@@ -95,7 +95,6 @@ class CustomDM(L.LightningDataModule):
             self.ds_val,
             batch_size=self.batch_size,
             shuffle=False,
-
             num_workers=self.num_workers,
             collate_fn=collate_fn
         )
