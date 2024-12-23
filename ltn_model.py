@@ -63,7 +63,7 @@ class CustomDDPM(L.LightningModule):
         residual = outputs.sample
         
         loss = self.loss_fn(residual, noise)
-        self.log(f"{stage}_loss", loss, prog_bar=True, on_epoch=True)
+        self.log(f"{stage}_loss", loss, prog_bar=True, on_epoch=True, on_step=True, sync_dist=True)
         return loss
         
     def training_step(self, batch):
@@ -90,8 +90,8 @@ class CustomDDPM(L.LightningModule):
 
         loss = self.loss_fn(fake_image.to(dtype=torch.float32), real_image.to(dtype=torch.float32))
         fid = get_fid(fake_image, real_image, self.device)
-        self.log("val_loss", loss, prog_bar=True, on_epoch=True)
-        self.log("val_fid", fid, prog_bar=True, on_epoch=True)
+        self.log("val_loss", loss, prog_bar=True, on_epoch=True, sync_dist=True)
+        self.log("val_fid", fid, prog_bar=True, on_epoch=True, sync_dist=True)
         return 
         
     def configure_optimizers(self):
