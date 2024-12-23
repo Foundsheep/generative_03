@@ -88,10 +88,9 @@ def get_class_nums(plate_dict_path):
     lower_type_num = len(plate_dict["lower_type"])
     return [rivet_num, die_num, upper_type_num, lower_type_num]
 
-def get_fid(fake_images, real_images):
+def get_fid(fake_images, real_images, device):
     # fid = FrechetInceptionDistance(feature_dim=2048, device="cuda" if torch.cuda.is_available() else "cpu")
-    fid = FrechetInceptionDistance(feature=2048)
-    fid.inception.to("cuda" if torch.cuda.is_available() else "cpu")
+    fid = FrechetInceptionDistance(feature=2048).to(device)
     fid.update(real_images, real=True)
     fid.update(fake_images, real=False)
     return fid.compute()
