@@ -100,6 +100,9 @@ def normalise_to_zero_and_one_from_minus_one(x: torch.Tensor, to_numpy=True) -> 
     out = out.cpu().permute(0, 2, 3, 1).numpy() if to_numpy else out.cpu()
     return out
 
+def normalise_to_zero_and_one_from_255(x: torch.Tensor) -> torch.Tensor:
+    return (x / 255.0).clamp(0, 1)
+
 def save_image(images: np.ndarray) -> None:
     timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
     
