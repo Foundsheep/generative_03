@@ -50,6 +50,7 @@ def train(args):
         default_root_dir=train_log_dir,
         fast_dev_run=args.fast_dev_run,
         strategy="ddp_find_unused_parameters_true",
+        check_val_every_n_epoch=10
     )
     trainer.fit(model=model, datamodule=dm)
     print("*************** TRAINING DONE ***************")
