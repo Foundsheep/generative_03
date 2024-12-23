@@ -72,21 +72,21 @@ class CustomDDPM(L.LightningModule):
     
     def validation_step(self, batch):
         real_image, categorical_conds, continuous_conds = self.unfold_batch(batch)
-        real_image.to(dtype=torch.uint8)
+        real_image = real_image.to(dtype=torch.uint8)
         fake_image = self(categorical_conds, continuous_conds, to_save_fig=False)
-        fake_image = torch.Tensor([
-            torch.Tensor(
+        
+        fake_image = torch.stack([
+            torch.from_numpy(
                 colour_quantisation(
                     denormalise_from_minus_one_to_255(f_img)
                     .cpu()
                     .permute(1, 2, 0)
                     .numpy()
                 )
-            )
-            .permute(2, 0, 1)
-            .to(dtype=torch.uint8)
+            ).permute(2, 0, 1)
             for f_img in fake_image
-        ])
+        ]).to(dtype=torch.uint8)
+        
         print(f"... {fake_image.dtype = } / {real_image.dtype = }")
         fid = get_fid(fake_image, real_image)
         loss = self.loss_fn(fake_image, real_image)
