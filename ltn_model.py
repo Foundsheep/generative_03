@@ -71,7 +71,7 @@ class CustomDDPM(L.LightningModule):
     
     def validation_step(self, batch):
         real_image, categorical_conds, continuous_conds = self.unfold_batch(batch)
-        real_image = real_image.to(dtype=torch.uint8, device="self.device")
+        real_image = real_image.to(dtype=torch.uint8, device=self.device)
         # real_image = normalise_to_zero_and_one_from_255(real_image)
         fake_image = self(categorical_conds, continuous_conds, to_save_fig=False)
         
