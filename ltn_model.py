@@ -66,7 +66,6 @@ class CustomDDPM(L.LightningModule):
         self.log(f"{stage}_loss", loss, prog_bar=True, on_epoch=True)
         return loss
         
-    
     def training_step(self, batch):
         return self.shared_step(batch, "train")
     
@@ -93,6 +92,7 @@ class CustomDDPM(L.LightningModule):
         loss = self.loss_fn(fake_image, real_image)
         self.log("val_loss", loss, prog_bar=True, on_epoch=True)
         self.log("val_fid", fid, prog_bar=True, on_epoch=True)
+        return 
         
     def configure_optimizers(self):
         return {

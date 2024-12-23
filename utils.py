@@ -151,7 +151,7 @@ def colour_quantisation(arr_original):
     arr = deepcopy(arr_original)
     colours = [BACKGROUND, LOWER, MIDDLE, RIVET, UPPER]
 
-    print(f"...before quantisation: {len(np.unique(arr)) = }")
+    # print(f"...before quantisation: {len(np.unique(arr)) = }")
     for w in range(arr.shape[0]):
         for h in range(arr.shape[1]):
             max_diff = 255 * 3
@@ -189,7 +189,7 @@ def colour_quantisation(arr_original):
             arr[w, h] = quantised_pixel
             # print(f"before: {current_pixel}, after: {quantised_pixel} -> [{COLOUR_NAMES[set_channel_idx]}]")
 
-    print(f"...after quantisation: {len(np.unique(arr)) = }")
+    # print(f"...after quantisation: {len(np.unique(arr)) = }")
     return arr
 
 def denormalise_from_minus_one_to_255(x: torch.Tensor) -> torch.Tensor:
