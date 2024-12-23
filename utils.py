@@ -169,7 +169,7 @@ def colour_quantisation(arr_original):
                 # print(f"[{COLOUR_NAMES[colour_idx]}] : {c}")
                 
                 for channel_idx in range(arr.shape[2]):
-                    temp_diff += np.abs(current_pixel[channel_idx] - c[channel_idx])
+                    temp_diff += np.sqrt(np.square(current_pixel[channel_idx] - c[channel_idx]))
                     # print(f"{temp_diff = }")
                 
                 if temp_diff == 0:
@@ -190,4 +190,4 @@ def colour_quantisation(arr_original):
     return arr
 
 def denormalise_from_minus_one_to_255(x: torch.Tensor) -> torch.Tensor:
-    return ((x + 1) * 127.5).to(dtype=torch.uint16)
+    return ((x + 1) * 127.5).to(dtype=torch.uint8)
