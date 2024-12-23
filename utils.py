@@ -3,7 +3,8 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 from pathlib import Path
 import torch
-from torchmetrics.image.fid import FrechetInceptionDistance
+# from torchmetrics.image.fid import FrechetInceptionDistance
+from torcheval.metrics import FrechetInceptionDistance
 import json
 import datetime
 from PIL import Image
