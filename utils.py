@@ -169,8 +169,9 @@ def colour_quantisation(arr_original):
                 # print(f"[{COLOUR_NAMES[colour_idx]}] : {c}")
                 
                 for channel_idx in range(arr.shape[2]):
-                    temp_diff += np.sqrt(np.square(current_pixel[channel_idx] - c[channel_idx]))
-                    # print(f"{temp_diff = }")
+                    temp_diff += np.abs(current_pixel[channel_idx] - c[channel_idx])                   
+                    print(f"{current_pixel[channel_idx] = } / {c[channel_idx] = }")
+                    print(f"{temp_diff = }")
                 
                 if temp_diff == 0:
                     continue
