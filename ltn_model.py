@@ -73,7 +73,7 @@ class CustomDDPM(L.LightningModule):
         real_image, categorical_conds, continuous_conds = self.unfold_batch(batch)
         real_image = real_image.to(dtype=torch.uint8, device=self.device)
         # real_image = normalise_to_zero_and_one_from_255(real_image)
-        fake_image = self(categorical_conds, continuous_conds, to_save_fig=False)
+        fake_image = self(real_image.shape[0], categorical_conds, continuous_conds, to_save_fig=False)
         
         fake_image = torch.stack([
             torch.from_numpy(
@@ -101,12 +101,12 @@ class CustomDDPM(L.LightningModule):
             "lr_scheduler": self.lr_scheduler
         }
     
-    def forward(self, categorical_conds, continuous_conds, to_save_fig=True):
+    def forward(self, batch_size, categorical_conds, continuous_conds, to_save_fig=True):
         self.inference_scheduler.set_timesteps(self.inference_num_steps)
         
         image = torch.randn(
             (
-                self.train_batch_size if self.is_train else self.inference_batch_size,
+                batch_size,
                 3,
                 self.unet_sample_size[0],
                 self.unet_sample_size[1]
