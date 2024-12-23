@@ -91,6 +91,7 @@ def get_class_nums(plate_dict_path):
 def get_fid(fake_images, real_images):
     # fid = FrechetInceptionDistance(feature_dim=2048, device="cuda" if torch.cuda.is_available() else "cpu")
     fid = FrechetInceptionDistance(feature=2048)
+    fid.inception.to("cuda" if torch.cuda.is_available() else "cpu")
     fid.update(real_images, real=True)
     fid.update(fake_images, real=False)
     return fid.compute()
