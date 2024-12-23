@@ -90,8 +90,8 @@ def get_class_nums(plate_dict_path):
 
 def get_fid(fake_images, real_images):
     fid = FrechetInceptionDistance(feature_dim=2048, device="cuda" if torch.cuda.is_available() else "cpu")
-    fid.update(real_images, real=True)
-    fid.update(fake_images, real=False)
+    fid.update(real_images, is_real=True)
+    fid.update(fake_images, is_real=False)
     return fid.compute()
 
 def normalise_to_zero_and_one_from_minus_one(x: torch.Tensor, to_numpy=True) -> np.ndarray:
