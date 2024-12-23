@@ -3,8 +3,8 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 from pathlib import Path
 import torch
-# from torchmetrics.image.fid import FrechetInceptionDistance
-from torcheval.metrics import FrechetInceptionDistance
+from torchmetrics.image.fid import FrechetInceptionDistance
+# from torcheval.metrics import FrechetInceptionDistance
 import json
 import datetime
 from PIL import Image
@@ -89,9 +89,10 @@ def get_class_nums(plate_dict_path):
     return [rivet_num, die_num, upper_type_num, lower_type_num]
 
 def get_fid(fake_images, real_images):
-    fid = FrechetInceptionDistance(feature_dim=2048, device="cuda" if torch.cuda.is_available() else "cpu")
-    fid.update(real_images, is_real=True)
-    fid.update(fake_images, is_real=False)
+    # fid = FrechetInceptionDistance(feature_dim=2048, device="cuda" if torch.cuda.is_available() else "cpu")
+    fid = FrechetInceptionDistance(feature=2048)
+    fid.update(real_images, real=True)
+    fid.update(fake_images, real=False)
     return fid.compute()
 
 def normalise_to_zero_and_one_from_minus_one(x: torch.Tensor, to_numpy=True) -> np.ndarray:
