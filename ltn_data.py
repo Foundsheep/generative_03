@@ -76,10 +76,10 @@ class CustomDM(L.LightningDataModule):
     def setup(self, stage):
         if self.is_full_data:
             self.ds_train = CustomDS(self.dataset_repo, self.height, self.width, self.plate_dict_path)
-            self.ds_val = CustomDS(self.dataset_repo, self.height, self.width, self.plate_dict_path, "train[-10%:]")
+            self.ds_val = CustomDS(self.dataset_repo, self.height, self.width, self.plate_dict_path, "train[99%:]")
         else:
-            self.ds_train = CustomDS(self.dataset_repo, self.height, self.width, self.plate_dict_path, "train[:80%]")
-            self.ds_val = CustomDS(self.dataset_repo, self.height, self.width, self.plate_dict_path, "train[80%:]")
+            self.ds_train = CustomDS(self.dataset_repo, self.height, self.width, self.plate_dict_path, "train[:90%]")
+            self.ds_val = CustomDS(self.dataset_repo, self.height, self.width, self.plate_dict_path, "train[90%:]")
             
     def train_dataloader(self):
         return torch.utils.data.DataLoader(
