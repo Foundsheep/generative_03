@@ -110,6 +110,7 @@ class CustomDDPM(L.LightningModule):
             "lr_scheduler": self.lr_scheduler
         }
     
+    @torch.no_grad()
     def forward(self, batch_size, categorical_conds, continuous_conds, to_save_fig=True):
         self.inference_scheduler.set_timesteps(self.inference_num_steps)
         
