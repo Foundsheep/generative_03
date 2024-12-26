@@ -112,7 +112,8 @@ class CustomDDPM(L.LightningModule):
             ),
             device=self.device
         )
-
+        print("......... image made")
+        
         for t in tqdm(self.inference_scheduler.timesteps):
             outs = self.unet(
                 sample=image, 
@@ -121,7 +122,7 @@ class CustomDDPM(L.LightningModule):
                 continuous_class_labels=continuous_conds,
             )
             image = self.inference_scheduler.step(outs.sample, t, image).prev_sample
-        
+            print(f"................... {t} step done")
         if to_save_fig:
             self.save_generated_image(image)
         return image

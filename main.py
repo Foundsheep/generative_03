@@ -124,13 +124,11 @@ def predict(args):
     
     # OOM
     torch.cuda.empty_cache()
-    with torch.amp.autocast(device_type="cuda" if torch.cuda.is_available() else "cpu", dtype=torch.float8_e4m3fn):
-        model.eval()
-        out = model(
-            batch_size=args.inference_batch_size,
-            categorical_conds=categorical_conds,
-            continuous_conds=continuous_conds
-        )
+    model.eval()
+    out = model(
+        batch_size=args.inference_batch_size,
+        categorical_conds=categorical_conds,
+        continuous_conds=continuous_conds
     print("*************** INFERENCE DONE ***************")
     print("**********************************************")
     
