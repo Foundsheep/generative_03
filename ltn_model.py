@@ -73,7 +73,6 @@ class CustomDDPM(L.LightningModule):
     def validation_step(self, batch, batch_idx):
         real_image, categorical_conds, continuous_conds = self.unfold_batch(batch)
         real_image = real_image.to(dtype=torch.uint8, device=self.device)
-        # real_image = normalise_to_zero_and_one_from_255(real_image)
         fake_image = self(real_image.shape[0], categorical_conds, continuous_conds, to_save_fig=False)
 
         fake_image = torch.stack([
@@ -87,12 +86,20 @@ class CustomDDPM(L.LightningModule):
             ).permute(2, 0, 1)
             for f_img in fake_image
         ]).to(dtype=torch.uint8, device=self.device)
-        # fake_image = normalise_to_zero_and_one_from_255(fake_image)
+
+        fid = get_fid(fake_image, real_image, self.device)
+        self.log("val_fid", fid, prog_bar=True, on_epoch=True, sync_dist=True)
+        
+        print(f":::: {fake_image.min() = } / {fake_image.max() = } / {fake_image.dtype}")
+        print(f":::: {real_image.min() = } / {real_image.max() = } / {real_image.dtype}")
+        fake_image = normalise_to_zero_and_one_from_255(fake_image).to(dtype=torch.float32)
+        real_image = normalise_to_zero_and_one_from_255(real_image).to(dtype=torch.float32)
+
+        print(f";;;; {fake_image.min() = } / {fake_image.max() = } / {fake_image.dtype}")
+        print(f";;;; {real_image.min() = } / {real_image.max() = } / {real_image.dtype}")
 
         loss = self.loss_fn(fake_image.to(dtype=torch.float32), real_image.to(dtype=torch.float32))
-        fid = get_fid(fake_image, real_image, self.device)
         self.log("val_loss", loss, prog_bar=True, on_epoch=True, sync_dist=True)
-        self.log("val_fid", fid, prog_bar=True, on_epoch=True, sync_dist=True)
 
         # log image
         tb = self.logger.experiment
@@ -116,7 +123,6 @@ class CustomDDPM(L.LightningModule):
             "lr_scheduler": self.lr_scheduler
         }
     
-    @torch.no_grad()
     def forward(self, batch_size, categorical_conds, continuous_conds, to_save_fig=True):
         self.inference_scheduler.set_timesteps(self.inference_num_steps)
         
