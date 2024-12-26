@@ -1,6 +1,7 @@
 import torch
 import torchvision
 import lightning as L
+from lightning.pytorch.callbacks import ModelCheckpoint
 from diffusers import UNet2DModel
 from utils import *
 from tqdm import tqdm
@@ -152,6 +153,28 @@ class CustomDDPM(L.LightningModule):
         if to_save_fig:
             self.save_generated_image(image)
         return image
+    
+    def configure_callbacks(self):
+        checkpoint_save_last = ModelCheckpoint(
+            save_last=True,
+            filename="{epoch}-{step}-{train_loss:.4f}_save_last"
+        )
+
+        checkpoint_save_per_250 = ModelCheckpoint(
+            save_top_k=-1,
+            every_n_epochs=250,
+            filename="{epoch}-{step}-{train_loss:.4f}_save_per_250"
+        )
+        
+        checkpoint_save_top_loss = ModelCheckpoint(
+            save_top_k=3,
+            monitor=self.checkpoint_monitor,
+            mode=self.checkpoint_mode,
+            every_n_epochs=1,
+            filename="{epoch}-{step}-{train_loss:.4f}"
+        )
+        
+        return [checkpoint_save_last, checkpoint_save_per_250, checkpoint_save_top_loss]
         
     def count_parameters(self):
         num = sum(p.numel() for p in self.parameters() if p.requires_grad)
