@@ -124,7 +124,7 @@ def predict(args):
     
     # OOM
     torch.cuda.empty_cache()
-    with torch.amp.autocast(device_type="cuda" if torch.cuda.is_available() else "cpu", dtype=torch.float16):
+    with torch.amp.autocast(device_type="cuda" if torch.cuda.is_available() else "cpu", dtype=torch.bfloat16):
         model.eval()
         out = model(
             batch_size=args.inference_batch_size,
