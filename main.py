@@ -62,11 +62,11 @@ def train(args):
 def predict(args):
     
     # to resolve OOM error
-    os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
-    os.environ["CUDA_HOME"] = "/usr/local/cuda"
-    os.environ["PATH"] = os.environ["CUDA_HOME"] + "/bin:" + os.environ["PATH"]
-    os.environ["LD_LIBRARY_PATH"] = os.environ["CUDA_HOME"] + "/lib64:" + os.environ["LD_LIBRARY_PATH"]
-    print(f"**** {os.environ['PYTORCH_CUDA_ALLOC_CONF'] = }")
+    # os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
+    # os.environ["CUDA_HOME"] = "/usr/local/cuda"
+    # os.environ["PATH"] = os.environ["CUDA_HOME"] + "/bin:" + os.environ["PATH"]
+    # os.environ["LD_LIBRARY_PATH"] = os.environ["CUDA_HOME"] + "/lib64:" + os.environ["LD_LIBRARY_PATH"]
+    # print(f"**** {os.environ['PYTORCH_CUDA_ALLOC_CONF'] = }")
         
     model = CustomDDPM.load_from_checkpoint(
         checkpoint_path=args.checkpoint_path,
