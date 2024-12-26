@@ -127,12 +127,14 @@ def predict(args):
     model.eval()
     # model.to("cpu")
     torch.cuda.memory._record_memory_history()
-    out = model(
-        batch_size=args.inference_batch_size,
-        categorical_conds=categorical_conds,
-        continuous_conds=continuous_conds
-    )
-    torch.cuda.memory._dump_snapshot("memory_snapshot.pickle")
+    try:
+        out = model(
+            batch_size=args.inference_batch_size,
+            categorical_conds=categorical_conds,
+            continuous_conds=continuous_conds
+        )
+    except:
+        torch.cuda.memory._dump_snapshot("memory_snapshot.pickle")
     print("*************** INFERENCE DONE ***************")
     print("**********************************************")
     
