@@ -122,6 +122,7 @@ def predict(args):
         .to(device="cuda" if torch.cuda.is_available() else "cpu")
     )
     
+    model.eval()
     out = model(
         batch_size=args.inference_batch_size,
         categorical_conds=categorical_conds,
