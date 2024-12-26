@@ -129,6 +129,7 @@ def predict(args):
         batch_size=args.inference_batch_size,
         categorical_conds=categorical_conds,
         continuous_conds=continuous_conds
+    )
     print("*************** INFERENCE DONE ***************")
     print("**********************************************")
     
