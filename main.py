@@ -135,6 +135,8 @@ def predict(args):
         )
     except:
         torch.cuda.memory._dump_snapshot("memory_snapshot.pickle")
+    finally:
+        torch.cuda.memory._dump_snapshot("memory_snapshot_completed.pickle")
     print("*************** INFERENCE DONE ***************")
     print("**********************************************")
     
