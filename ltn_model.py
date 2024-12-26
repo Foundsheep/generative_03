@@ -96,10 +96,16 @@ class CustomDDPM(L.LightningModule):
 
         # log image
         tb = self.logger.experiment
-        grid = torchvision.utils.make_grid(fake_image)
+        grid_fake = torchvision.utils.make_grid(fake_image)
+        grid_real = torchvision.utils.make_grid(real_image)
         tb.add_image(
             "val_samples",
-            grid,
+            grid_fake,
+            self.current_epoch * self.train_batch_size + self.batch_idx,
+        )
+        tb.add_image(
+            "val_reals",
+            grid_real,
             self.current_epoch * self.train_batch_size + self.batch_idx,
         )
         return 
@@ -123,7 +129,6 @@ class CustomDDPM(L.LightningModule):
             ),
             device=self.device
         )
-        print("......... image made")
         
         for t in tqdm(self.inference_scheduler.timesteps):
             outs = self.unet(
@@ -133,9 +138,10 @@ class CustomDDPM(L.LightningModule):
                 continuous_class_labels=continuous_conds,
             )
             image = self.inference_scheduler.step(outs.sample, t, image).prev_sample
-            print(f"................... {t} step done")
-            del outs
-            torch.cuda.empty_cache()
+
+            # if OOM occurs... at least try...
+            # del outs
+            # torch.cuda.empty_cache()
             
         if to_save_fig:
             self.save_generated_image(image)

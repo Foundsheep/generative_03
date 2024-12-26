@@ -59,15 +59,7 @@ def train(args):
     print("*********************************************")
     
 
-def predict(args):
-    
-    # to resolve OOM error
-    # os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
-    # os.environ["CUDA_HOME"] = "/usr/local/cuda"
-    # os.environ["PATH"] = os.environ["CUDA_HOME"] + "/bin:" + os.environ["PATH"]
-    # os.environ["LD_LIBRARY_PATH"] = os.environ["CUDA_HOME"] + "/lib64:" + os.environ["LD_LIBRARY_PATH"]
-    # print(f"**** {os.environ['PYTORCH_CUDA_ALLOC_CONF'] = }")
-        
+def predict(args):        
     model = CustomDDPM.load_from_checkpoint(
         checkpoint_path=args.checkpoint_path,
         multi_class_nums=get_class_nums(args.plate_dict_path),
@@ -122,21 +114,12 @@ def predict(args):
         .to(device="cuda" if torch.cuda.is_available() else "cpu")
     )
     
-    # OOM
-    torch.cuda.empty_cache()
     model.eval()
-    # model.to("cpu")
-    torch.cuda.memory._record_memory_history()
-    try:
-        out = model(
-            batch_size=args.inference_batch_size,
-            categorical_conds=categorical_conds,
-            continuous_conds=continuous_conds
-        )
-    except:
-        torch.cuda.memory._dump_snapshot("memory_snapshot.pickle")
-    finally:
-        torch.cuda.memory._dump_snapshot("memory_snapshot_completed.pickle")
+    out = model(
+        batch_size=args.inference_batch_size,
+        categorical_conds=categorical_conds,
+        continuous_conds=continuous_conds
+    )
     print("*************** INFERENCE DONE ***************")
     print("**********************************************")
     
