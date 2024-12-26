@@ -10,6 +10,7 @@ import datetime
 from PIL import Image
 import numpy as np
 from copy import deepcopy
+from args_default import Config
 
 def get_scheduler(scheduler_name):
     scheduler = None
@@ -71,8 +72,16 @@ def get_transforms(height: int, width: int, plate_dict_path: str):
         "die": lambda x: torch.Tensor([plate_dict["die"][x]]),
         "upper_type": lambda x: torch.Tensor([plate_dict["upper_type"][x]]),
         "upper_thickness": lambda x: torch.Tensor([normalise_to_minus_one_and_one(x, min(plate_dict["upper_thickness"]), max(plate_dict["upper_thickness"]))]),
-        "middle_type": lambda x: torch.Tensor([plate_dict["middle_type"][x]]),
-        "middle_thickness": lambda x: torch.Tensor([normalise_to_minus_one_and_one(x, min(plate_dict["middle_thickness"]), max(plate_dict["middle_thickness"]))]),
+        "middle_type": (
+            lambda x: torch.Tensor([plate_dict["middle_type"][x]])
+            if x is not None
+            else torch.Tensor([len(plate_dict["middle_type"])])
+        ),
+        "middle_thickness": (
+            lambda x: torch.Tensor([normalise_to_minus_one_and_one(x, min(plate_dict["middle_thickness"]), max(plate_dict["middle_thickness"]))])
+            if x is not None
+            else torch.Tensor([Config.NONE_TENSOR_VALUE])
+        ),
         "lower_type": lambda x: torch.Tensor([plate_dict["lower_type"][x]]),
         "lower_thickness": lambda x: torch.Tensor([normalise_to_minus_one_and_one(x, min(plate_dict["lower_thickness"]), max(plate_dict["lower_thickness"]))]),
         "head_height": lambda x: torch.Tensor([normalise_to_minus_one_and_one(x, min(plate_dict["head_height"]), max(plate_dict["head_height"]))]),
@@ -86,7 +95,7 @@ def get_class_nums(plate_dict_path):
     upper_type_num = len(plate_dict["upper_type"])
     middle_type_num = len(plate_dict["middle_type"])
     lower_type_num = len(plate_dict["lower_type"])
-    return [rivet_num, die_num, upper_type_num, lower_type_num]
+    return [rivet_num, die_num, upper_type_num, middle_type_num, lower_type_num]
 
 def get_fid(fake_images, real_images, device):
     # fid = FrechetInceptionDistance(feature_dim=2048, device="cuda" if torch.cuda.is_available() else "cpu")

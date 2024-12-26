@@ -38,16 +38,8 @@ class CustomDS(torch.utils.data.Dataset):
         die = self.transforms["die"](die)
         upper_type = self.transforms["upper_type"](upper_type)
         upper_thickness = self.transforms["upper_thickness"](upper_thickness)
-        middle_type = (
-            self.transforms["middle_type"](middle_type)
-            if middle_type is not None
-            else torch.Tensor([Config.NONE_TENSOR_VALUE])
-        )
-        middle_thickness = (
-            self.transforms["middle_thickness"](middle_thickness)
-            if middle_thickness is not None
-            else torch.Tensor([Config.NONE_TENSOR_VALUE])
-        )
+        middle_type = self.transforms["middle_type"](middle_type)
+        middle_thickness = self.transforms["middle_thickness"](middle_thickness)
         lower_type = self.transforms["lower_type"](lower_type)
         lower_thickness = self.transforms["lower_thickness"](lower_thickness)
         head_height = self.transforms["head_height"](head_height)
