@@ -124,17 +124,13 @@ def predict(args):
     
     # OOM
     torch.cuda.empty_cache()
-    del transforms, plate_count, rivet
-    del die, upper_type, upper_thickness,
-    del middle_type, middle_thickness,
-    del lower_type, lower_thickness, head_height
-    
-    model.eval()
-    out = model(
-        batch_size=args.inference_batch_size,
-        categorical_conds=categorical_conds,
-        continuous_conds=continuous_conds
-    )
+    with torch.amp.autocast():
+        model.eval()
+        out = model(
+            batch_size=args.inference_batch_size,
+            categorical_conds=categorical_conds,
+            continuous_conds=continuous_conds
+        )
     print("*************** INFERENCE DONE ***************")
     print("**********************************************")
     
