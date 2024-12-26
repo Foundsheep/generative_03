@@ -67,7 +67,6 @@ def predict(args):
     # os.environ["PATH"] = os.environ["CUDA_HOME"] + "/bin:" + os.environ["PATH"]
     # os.environ["LD_LIBRARY_PATH"] = os.environ["CUDA_HOME"] + "/lib64:" + os.environ["LD_LIBRARY_PATH"]
     # print(f"**** {os.environ['PYTORCH_CUDA_ALLOC_CONF'] = }")
-    torch.cuda.set_per_process_memory_fraction(0.8)
         
     model = CustomDDPM.load_from_checkpoint(
         checkpoint_path=args.checkpoint_path,
@@ -122,6 +121,10 @@ def predict(args):
         torch.stack([plate_count, upper_thickness, lower_thickness, head_height])
         .to(device="cuda" if torch.cuda.is_available() else "cpu")
     )
+    
+    # OOM
+    torch.cuda.empty_cache()
+    torch.cuda.reset_peak_memory_stats()
     
     model.eval()
     out = model(
