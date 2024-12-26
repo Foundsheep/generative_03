@@ -34,4 +34,15 @@ def get_args():
     parser.add_argument("--predict", action=argparse.BooleanOptionalAction)
     parser.add_argument("--train", action=argparse.BooleanOptionalAction)
 
+    parser.add_argument("--plate_count", type=int, default=None)    
+    parser.add_argument("--rivet", type=str, default=None)
+    parser.add_argument("--die", type=str, default=None)
+    parser.add_argument("--upper_type", type=str, default=None)
+    parser.add_argument("--upper_thickness", type=float, default=None)
+    parser.add_argument("--middle_type", type=str, default=None)
+    parser.add_argument("--middle_thickness", type=float, default=None)
+    parser.add_argument("--lower_type", type=str, default=None)
+    parser.add_argument("--lower_thickness", type=float, default=None)
+    parser.add_argument("--head_height", type=float, default=None)
+    
     return parser.parse_args()

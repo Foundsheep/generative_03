@@ -5,8 +5,9 @@ from ltn_data import CustomDM
 from ltn_model import CustomDDPM
 import numpy as np
 import random
-from utils import get_class_nums
+from utils import get_class_nums, get_transforms
 from args_parse import get_args
+from args_default import Config
 
 torch.set_float32_matmul_precision("medium")
 
@@ -76,7 +77,41 @@ def predict(args):
         is_train=False,
     )
     
-    out = model()
+    # conditions
+    # TODO: inference_height and width are not used. To make it used,
+    # modify the code to use them in resizing the output to a desired size
+    transforms = get_transforms(
+        height=args.inference_height,
+        width=args.inference_width,
+        plate_dict_path=args.plate_dict_path
+    )
+    plate_count = transforms["plate_count"](args.plate_count)
+    rivet = transforms["rivet"](args.rivet)
+    die = transforms["die"](args.die)
+    upper_type = transforms["upper_type"](args.upper_type)
+    upper_thickness = transforms["upper_thickness"](args.upper_thickness)
+    middle_type = (
+        transforms["middle_type"](args.middle_type)
+        if middle_type is not None
+        else torch.Tensor([Config.NONE_TENSOR_VALUE])
+    )
+    middle_thickness = (
+        transforms["middle_thickness"](args.middle_thickness)
+        if middle_thickness is not None
+        else torch.Tensor([Config.NONE_TENSOR_VALUE])
+    )
+    lower_type = transforms["lower_type"](args.lower_type)
+    lower_thickness = transforms["lower_thickness"](args.lower_thickness)
+    head_height = transforms["head_height"](args.head_height)
+    
+    categorical_conds = torch.stack([rivet, die, upper_type, lower_type])
+    continuous_conds = torch.stack([plate_count, upper_thickness, lower_thickness, head_height])
+    
+    out = model(
+        batch_size=args.inference_batch_size,
+        categorical_conds=categorical_conds,
+        continuous_conds=continuous_conds
+    )
     print("*************** INFERENCE DONE ***************")
     print("**********************************************")
     
