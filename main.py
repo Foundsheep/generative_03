@@ -104,13 +104,13 @@ def predict(args):
     lower_thickness = transforms["lower_thickness"](args.lower_thickness)
     head_height = transforms["head_height"](args.head_height)
     
-    categorical_conds = torch.stack(
-        [rivet, die, upper_type, lower_type],
-        dtype="cuda" if torch.cuda.is_available() else "cpu"
+    categorical_conds = (
+        torch.stack([rivet, die, upper_type, lower_type])
+        .to(dtype="cuda" if torch.cuda.is_available() else "cpu")
     )
-    continuous_conds = torch.stack(
-        [plate_count, upper_thickness, lower_thickness, head_height],
-        dtype="cuda" if torch.cuda.is_available() else "cpu"
+    continuous_conds = (
+        torch.stack([plate_count, upper_thickness, lower_thickness, head_height])
+        .to(dtype="cuda" if torch.cuda.is_available() else "cpu")
     )
     
     out = model(
