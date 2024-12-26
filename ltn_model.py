@@ -110,7 +110,7 @@ class CustomDDPM(L.LightningModule):
                 self.unet_sample_size[0],
                 self.unet_sample_size[1]
             ),
-            device=self.device
+            # device=self.device
         )
         print("......... image made")
         
