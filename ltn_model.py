@@ -1,4 +1,5 @@
 import torch
+import torchvision
 import lightning as L
 from diffusers import UNet2DModel
 from utils import *
@@ -66,15 +67,15 @@ class CustomDDPM(L.LightningModule):
         self.log(f"{stage}_loss", loss, prog_bar=True, on_epoch=True, on_step=True, sync_dist=True)
         return loss
         
-    def training_step(self, batch):
+    def training_step(self, batch, batch_idx):
         return self.shared_step(batch, "train")
     
-    def validation_step(self, batch):
+    def validation_step(self, batch, batch_idx):
         real_image, categorical_conds, continuous_conds = self.unfold_batch(batch)
         real_image = real_image.to(dtype=torch.uint8, device=self.device)
         # real_image = normalise_to_zero_and_one_from_255(real_image)
         fake_image = self(real_image.shape[0], categorical_conds, continuous_conds, to_save_fig=False)
-        
+
         fake_image = torch.stack([
             torch.from_numpy(
                 colour_quantisation(
@@ -92,6 +93,15 @@ class CustomDDPM(L.LightningModule):
         fid = get_fid(fake_image, real_image, self.device)
         self.log("val_loss", loss, prog_bar=True, on_epoch=True, sync_dist=True)
         self.log("val_fid", fid, prog_bar=True, on_epoch=True, sync_dist=True)
+
+        # log image
+        tb = self.logger.experiment
+        grid = torchvision.utils.make_grid(fake_image)
+        tb.add_image(
+            "val_samples",
+            grid,
+            self.current_epoch * self.train_batch_size + self.batch_idx,
+        )
         return 
         
     def configure_optimizers(self):
@@ -110,7 +120,7 @@ class CustomDDPM(L.LightningModule):
                 self.unet_sample_size[0],
                 self.unet_sample_size[1]
             ),
-            # device=self.device
+            device=self.device
         )
         print("......... image made")
         

@@ -115,17 +115,17 @@ def predict(args):
     
     categorical_conds = (
         torch.stack([rivet, die, upper_type, lower_type])
-        # .to(device="cuda" if torch.cuda.is_available() else "cpu")
+        .to(device="cuda" if torch.cuda.is_available() else "cpu")
     )
     continuous_conds = (
         torch.stack([plate_count, upper_thickness, lower_thickness, head_height])
-        # .to(device="cuda" if torch.cuda.is_available() else "cpu")
+        .to(device="cuda" if torch.cuda.is_available() else "cpu")
     )
     
     # OOM
     torch.cuda.empty_cache()
     model.eval()
-    model.to("cpu")
+    # model.to("cpu")
     out = model(
         batch_size=args.inference_batch_size,
         categorical_conds=categorical_conds,
