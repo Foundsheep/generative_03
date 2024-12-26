@@ -133,6 +133,9 @@ class CustomDDPM(L.LightningModule):
             )
             image = self.inference_scheduler.step(outs.sample, t, image).prev_sample
             print(f"................... {t} step done")
+            del outs
+            torch.cuda.empty_cache()
+            
         if to_save_fig:
             self.save_generated_image(image)
         return image
