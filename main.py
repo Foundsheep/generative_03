@@ -92,12 +92,12 @@ def predict(args):
     upper_thickness = transforms["upper_thickness"](args.upper_thickness)
     middle_type = (
         transforms["middle_type"](args.middle_type)
-        if middle_type is not None
+        if args.middle_type is not None
         else torch.Tensor([Config.NONE_TENSOR_VALUE])
     )
     middle_thickness = (
         transforms["middle_thickness"](args.middle_thickness)
-        if middle_thickness is not None
+        if args.middle_thickness is not None
         else torch.Tensor([Config.NONE_TENSOR_VALUE])
     )
     lower_type = transforms["lower_type"](args.lower_type)
