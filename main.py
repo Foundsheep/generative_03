@@ -63,7 +63,7 @@ def predict(args):
     
     # to resolve OOM error
     os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
-    print(f"**** {os.environ["PYTORCH_CUDA_ALLOC_CONF"] = }")
+    print(f"**** {os.environ['PYTORCH_CUDA_ALLOC_CONF'] = }")
         
     model = CustomDDPM.load_from_checkpoint(
         checkpoint_path=args.checkpoint_path,
