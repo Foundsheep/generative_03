@@ -101,12 +101,12 @@ class CustomDDPM(L.LightningModule):
         tb.add_image(
             "val_samples",
             grid_fake,
-            self.current_epoch * self.train_batch_size + self.batch_idx,
+            self.global_step,
         )
         tb.add_image(
             "val_reals",
             grid_real,
-            self.current_epoch * self.train_batch_size + self.batch_idx,
+            self.global_step,
         )
         return 
         
