@@ -41,12 +41,12 @@ class CustomDS(torch.utils.data.Dataset):
         middle_type = (
             self.transforms["middle_type"](middle_type)
             if middle_type is not None
-            else torch.Tensor([Config.NONE_TENSOR_VALUR])
+            else torch.Tensor([Config.NONE_TENSOR_VALUE])
         )
         middle_thickness = (
             self.transforms["middle_thickness"](middle_thickness)
             if middle_thickness is not None
-            else torch.Tensor([Config.NONE_TENSOR_VALUR])
+            else torch.Tensor([Config.NONE_TENSOR_VALUE])
         )
         lower_type = self.transforms["lower_type"](lower_type)
         lower_thickness = self.transforms["lower_thickness"](lower_thickness)

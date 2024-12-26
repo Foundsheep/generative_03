@@ -5,6 +5,7 @@ from ltn_data import CustomDM
 from ltn_model import CustomDDPM
 import numpy as np
 import random
+import os
 from utils import get_class_nums, get_transforms
 from args_parse import get_args
 from args_default import Config
@@ -59,6 +60,11 @@ def train(args):
     
 
 def predict(args):
+    
+    # to resolve OOM error
+    os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
+    print(f"**** {os.environ["PYTORCH_CUDA_ALLOC_CONF"] = }")
+        
     model = CustomDDPM.load_from_checkpoint(
         checkpoint_path=args.checkpoint_path,
         multi_class_nums=get_class_nums(args.plate_dict_path),
