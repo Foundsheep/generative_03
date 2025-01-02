@@ -91,16 +91,8 @@ def predict(args):
     die = transforms["die"](args.die)
     upper_type = transforms["upper_type"](args.upper_type)
     upper_thickness = transforms["upper_thickness"](args.upper_thickness)
-    middle_type = (
-        transforms["middle_type"](args.middle_type)
-        if args.middle_type is not None
-        else torch.Tensor([Config.NONE_TENSOR_VALUE])
-    )
-    middle_thickness = (
-        transforms["middle_thickness"](args.middle_thickness)
-        if args.middle_thickness is not None
-        else torch.Tensor([Config.NONE_TENSOR_VALUE])
-    )
+    middle_type = transforms["middle_type"](args.middle_type)
+    middle_thickness = transforms["middle_thickness"](args.middle_thickness)
     lower_type = transforms["lower_type"](args.lower_type)
     lower_thickness = transforms["lower_thickness"](args.lower_thickness)
     head_height = transforms["head_height"](args.head_height)
