@@ -106,11 +106,11 @@ def predict(args):
     head_height = transforms["head_height"](args.head_height)
     
     categorical_conds = (
-        torch.stack([rivet, die, upper_type, lower_type])
+        torch.stack([rivet, die, upper_type, middle_type, lower_type])
         .to(device="cuda" if torch.cuda.is_available() else "cpu")
     )
     continuous_conds = (
-        torch.stack([plate_count, upper_thickness, lower_thickness, head_height])
+        torch.stack([plate_count, upper_thickness, middle_thickness, lower_thickness, head_height])
         .to(device="cuda" if torch.cuda.is_available() else "cpu")
     )
     
