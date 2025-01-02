@@ -162,8 +162,8 @@ class CustomDDPM(L.LightningModule):
         
         checkpoint_save_top_loss = ModelCheckpoint(
             save_top_k=3,
-            monitor=self.checkpoint_monitor,
-            mode=self.checkpoint_mode,
+            monitor="train_loss",
+            mode="min",
             every_n_epochs=1,
             filename="{epoch}-{step}-{train_loss:.4f}"
         )
