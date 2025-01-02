@@ -91,14 +91,8 @@ class CustomDDPM(L.LightningModule):
         fid = get_fid(fake_image, real_image, self.device)
         self.log("val_fid", fid, prog_bar=True, on_epoch=True, sync_dist=True)
         
-        # print(f":::: {fake_image.min() = } / {fake_image.max() = } / {fake_image.dtype}")
-        # print(f":::: {real_image.min() = } / {real_image.max() = } / {real_image.dtype}")
         fake_image = normalise_to_zero_and_one_from_255(fake_image).to(dtype=torch.float32)
         real_image = normalise_to_zero_and_one_from_255(real_image).to(dtype=torch.float32)
-
-        # print(f";;;; {fake_image.min() = } / {fake_image.max() = } / {fake_image.dtype}")
-        # print(f";;;; {real_image.min() = } / {real_image.max() = } / {real_image.dtype}")
-
         loss = self.loss_fn(fake_image.to(dtype=torch.float32), real_image.to(dtype=torch.float32))
         self.log("val_loss", loss, prog_bar=True, on_epoch=True, sync_dist=True)
 
