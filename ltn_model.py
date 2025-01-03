@@ -49,6 +49,9 @@ class CustomDDPM(L.LightningModule):
         self.loss_fn = torch.nn.functional.mse_loss
         self.is_train = is_train
         
+        # save hparams
+        self.save_hyperparameters()
+        
     def shared_step(self, batch, stage):
         image, categorical_conds, continuous_conds = self.unfold_batch(batch)
         
