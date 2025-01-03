@@ -15,8 +15,8 @@ class Config:
     INFERENCE_HEIGHT = 480 * 3
     INFERENCE_WIDTH = 640 * 3
     LR = 0.001
-    TRAIN_HEIGHT = 240
-    TRAIN_WIDTH = 320
+    TRAIN_HEIGHT = 240 # TODO: delete
+    TRAIN_WIDTH = 320 # TODO: delete
     TRAIN_BATCH_SIZE = 2
     TRAIN_SHUFFLE = True
     TRAIN_NUM_WORKERS = 8
