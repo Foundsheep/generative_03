@@ -78,7 +78,6 @@ class CustomDDPM(L.LightningModule):
         real_image, categorical_conds, continuous_conds = self.unfold_batch(batch)
         real_image = real_image.to(dtype=torch.uint8, device=self.device)
         fake_image = self(real_image.shape[0], categorical_conds, continuous_conds, to_save_fig=False)
-
         fake_image = torch.stack([
             torch.from_numpy(
                 colour_quantisation(

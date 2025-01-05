@@ -34,8 +34,8 @@ def train(args):
     
     dm = CustomDM(
         dataset_repo=args.dataset_repo,
-        height=args.train_height,
-        width=args.train_width,
+        height=args.unet_sample_size[0],
+        width=args.unet_sample_size[1],
         batch_size=args.train_batch_size,
         shuffle=args.train_shuffle,
         num_workers=args.train_num_workers,
