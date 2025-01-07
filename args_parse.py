@@ -17,8 +17,6 @@ def get_args():
     parser.add_argument("--inference_width", type=int, default=Config.INFERENCE_WIDTH)
     parser.add_argument("--lr", type=float, default=Config.LR)
     parser.add_argument("--dataset_repo", type=str, default=Config.DATASET_REPO)
-    parser.add_argument("--train_height", type=int, default=Config.TRAIN_HEIGHT)
-    parser.add_argument("--train_width", type=int, default=Config.TRAIN_WIDTH)
     parser.add_argument("--train_batch_size", type=int, default=Config.TRAIN_BATCH_SIZE)
     parser.add_argument("--train_shuffle", type=bool, default=Config.TRAIN_SHUFFLE)
     parser.add_argument("--train_num_workers", type=int, default=Config.TRAIN_NUM_WORKERS)
