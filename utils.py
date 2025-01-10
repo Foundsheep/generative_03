@@ -93,7 +93,7 @@ def get_class_nums(plate_dict_path):
     rivet_num = len(plate_dict["rivet"])
     die_num = len(plate_dict["die"])
     upper_type_num = len(plate_dict["upper_type"])
-    middle_type_num = len(plate_dict["middle_type"])
+    middle_type_num = len(plate_dict["middle_type"]) + 1
     lower_type_num = len(plate_dict["lower_type"])
     return [rivet_num, die_num, upper_type_num, middle_type_num, lower_type_num]
 
