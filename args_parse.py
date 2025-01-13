@@ -31,6 +31,7 @@ def get_args():
     parser.add_argument("--checkpoint_path", type=str)
     parser.add_argument("--predict", action=argparse.BooleanOptionalAction)
     parser.add_argument("--train", action=argparse.BooleanOptionalAction)
+    parser.add_argument("--resume_training", action=argparse.BooleanOptionalAction)
 
     parser.add_argument("--plate_count", type=int, default=None)    
     parser.add_argument("--rivet", type=str, default=None)

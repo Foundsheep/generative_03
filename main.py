@@ -54,7 +54,10 @@ def train(args):
         strategy="ddp_find_unused_parameters_true",
         check_val_every_n_epoch=50
     )
-    trainer.fit(model=model, datamodule=dm)
+    if args.resume_training:
+        trainer.fit(model=model, datamodule=dm, ckpt_path=args.checkpoint_path)
+    else:
+        trainer.fit(model=model, datamodule=dm)
     print("*************** TRAINING DONE ***************")
     print("*********************************************")
     
