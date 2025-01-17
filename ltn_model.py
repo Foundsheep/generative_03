@@ -151,10 +151,15 @@ class CustomDDPM(L.LightningModule):
         return image
     
     def configure_callbacks(self):
+        checkpoint_save_last = ModelCheckpoint(
+            save_last=True,
+            filename="{epoch}-{step}-{train_loss:.4f}_last"
+        )
+        
         checkpoint_save_per_250 = ModelCheckpoint(
             save_top_k=-1,
             every_n_epochs=250,
-            filename="{epoch}-{step}-{train_loss:.4f}_save_per_250"
+            filename="{epoch}-{step}-{train_loss:.4f}_per_250"
         )
         
         # checkpoint_save_top_loss = ModelCheckpoint(
@@ -165,7 +170,7 @@ class CustomDDPM(L.LightningModule):
         #     filename="{epoch}-{step}-{train_loss:.4f}"
         # )
         
-        return [checkpoint_save_per_250]
+        return [checkpoint_save_last, checkpoint_save_per_250]
         
     def count_parameters(self):
         num = sum(p.numel() for p in self.parameters() if p.requires_grad)
