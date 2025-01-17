@@ -162,6 +162,7 @@ class CustomDDPM(L.LightningModule):
             filename="{epoch}-{step}-{train_loss:.4f}_per_250"
         )
         
+        # # this one is causing an error if resuming training
         # checkpoint_save_top_loss = ModelCheckpoint(
         #     save_top_k=3,
         #     monitor="train_loss",
