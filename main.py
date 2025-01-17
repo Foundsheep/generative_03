@@ -6,31 +6,14 @@ from ltn_model import CustomDDPM
 import numpy as np
 import random
 import os
+import yaml
 from utils import get_class_nums, get_transforms
 from args_parse import get_args
-from args_default import Config
 
 torch.set_float32_matmul_precision("medium")
 
 def train(args):
     timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-    
-    model = CustomDDPM(
-        multi_class_nums=get_class_nums(args.plate_dict_path),
-        num_continuous_class_embeds=args.num_continuous_class_embeds,
-        train_num_steps=args.train_num_steps,
-        train_batch_size=args.train_batch_size,
-        unet_sample_size=args.unet_sample_size,
-        unet_block_out_channels=args.unet_block_out_channels,
-        train_scheduler_name=args.train_scheduler_name,
-        inference_scheduler_name=args.inference_scheduler_name,
-        inference_num_steps=args.inference_num_steps,
-        inference_batch_size=args.inference_batch_size,
-        inference_height=args.inference_height,
-        inference_width=args.inference_width,
-        lr = args.lr,
-        is_train=True,
-    )
     
     dm = CustomDM(
         dataset_repo=args.dataset_repo,
@@ -54,10 +37,47 @@ def train(args):
         strategy="ddp_find_unused_parameters_true",
         check_val_every_n_epoch=50
     )
+
     if args.resume_training:
+        print("*************** TRAINING RESUMED ***************")
+        with open(args.hparams_path) as stream:
+            hp = yaml.safe_load(stream)
+        model = CustomDDPM(
+            multi_class_nums=hp["multi_class_nums"],
+            num_continuous_class_embeds=hp["num_continuous_class_embeds"],
+            train_num_steps=hp["train_num_steps"],
+            train_batch_size=hp["train_batch_size"],
+            unet_sample_size=hp["unet_sample_size"],
+            unet_block_out_channels=hp["unet_block_out_channels"],
+            train_scheduler_name=hp["train_scheduler_name"],
+            inference_scheduler_name=hp["inference_scheduler_name"],
+            inference_num_steps=hp["inference_num_steps"],
+            inference_batch_size=hp["inference_batch_size"],
+            inference_height=hp["inference_height"],
+            inference_width=hp["inference_width"],
+            lr = hp["lr"],
+            is_train=hp["is_train"],
+        )
         trainer.fit(model=model, datamodule=dm, ckpt_path=args.checkpoint_path)
     else:
-        trainer.fit(model=model, datamodule=dm)
+        print("*************** TRAINING STARTS ***************")
+        model = CustomDDPM(
+            multi_class_nums=get_class_nums(args.plate_dict_path),
+            num_continuous_class_embeds=args.num_continuous_class_embeds,
+            train_num_steps=args.train_num_steps,
+            train_batch_size=args.train_batch_size,
+            unet_sample_size=args.unet_sample_size,
+            unet_block_out_channels=args.unet_block_out_channels,
+            train_scheduler_name=args.train_scheduler_name,
+            inference_scheduler_name=args.inference_scheduler_name,
+            inference_num_steps=args.inference_num_steps,
+            inference_batch_size=args.inference_batch_size,
+            inference_height=args.inference_height,
+            inference_width=args.inference_width,
+            lr = args.lr,
+            is_train=True,
+        )
+        trainer.fit(model=model, datamodule=dm)    
     print("*************** TRAINING DONE ***************")
     print("*********************************************")
     
