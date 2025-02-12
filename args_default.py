@@ -2,7 +2,7 @@ from pathlib import Path
 
 
 class Config:
-    NONE_TENSOR_VALUE = -3
+    NONE_TENSOR_VALUE = -1
     PLATE_DICT_PATH = "./plate_dict.json"
     NUM_CONTINUOUS_CLASS_EMBEDS = 5
     TRAIN_NUM_STEPS = 1000
