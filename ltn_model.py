@@ -33,6 +33,8 @@ class CustomDDPM(L.LightningModule):
         self.unet_block_out_channels=unet_block_out_channels
         
         self.unet = UNet2DModel(
+            in_channels=1,
+            out_channels=1,
             sample_size=self.unet_sample_size,
             block_out_channels=self.unet_block_out_channels,
             num_continuous_class_embeds=self.num_continuous_class_embeds,
