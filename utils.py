@@ -12,6 +12,25 @@ import numpy as np
 from copy import deepcopy
 from args_default import Config
 
+BACKGROUND = [0, 0, 0]
+RIVET = [61, 245, 61]
+UPPER = [61, 61, 245]
+MIDDLE = [221, 255, 51]
+LOWER = [255, 96, 55]
+COLOUR_ORDER = [BACKGROUND, RIVET, UPPER, MIDDLE, LOWER]
+MIN_VAL = 0
+MAX_VAL = len(COLOUR_ORDER) - 1
+
+COLOUR_NAMES = {
+    "BACKGROUND": BACKGROUND,
+    "RIVET": RIVET,
+    "MIDDLE": MIDDLE,
+    "UPPER": UPPER,
+    "LOWER": LOWER,
+    }
+RIVET_DIAMETER = 7.75
+
+
 def get_scheduler(scheduler_name):
     scheduler = None
     if scheduler_name == "DDPMScheduler":
@@ -92,6 +111,48 @@ def get_transforms(height: int, width: int, plate_dict_path: str):
         "head_height": lambda x: torch.Tensor([x]).to(dtype=torch.float),
     }
     
+def minmax_normalise(img):
+    return np.divide(np.subtract(img, MIN_VAL), MAX_VAL)
+    
+def convert_3_channel_to_1_channel(img):
+    if not isinstance(img, np.ndarray):
+        img = np.array(img)
+    canvas = np.zeros((img.shape[0], img.shape[1]))
+    for idx, colour in enumerate(COLOUR_ORDER):
+        if idx == 0:
+            continue
+        x, y = np.where(np.all(img == colour, axis=-1))
+        canvas[x, y] = idx
+    return np.expand_dims(canvas, axis=0)
+
+def convert_1_channel_to_3_channel(img):
+    if isinstance(img, np.ndarray):
+        img = torch.Tensor(img.transpose(2, 0, 1))
+        
+    if img.dim() == 3 and img.shape[0] == 1:
+        img = img.squeeze()
+    revert = torch.zeros((3, img.shape[1], img.shape[2]))
+    for idx, colour in enumerate(COLOUR_ORDER):
+        if idx == 0:
+            continue
+        x, y = torch.where(revert == idx)
+        revert[x, y] = colour
+    return revert
+
+def convert_1_channel_to_3_channel_batch(batch, to_numpy=True):
+    result = []
+    for img in batch:
+        img = convert_1_channel_to_3_channel(img)
+        if to_numpy:
+            img = img.permute(1, 2, 0).nupmy()
+        result.append(img)
+
+    if to_numpy:
+        result = np.stack(result, axis=0)
+    else:
+        result = torch.stack(result, dim=0)
+    return result
+
 def get_class_nums(plate_dict_path):
     plate_dict = get_plate_dict(plate_dict_path)
     
@@ -147,20 +208,6 @@ def resize_to_original_ratio(images: np.ndarray, to_h: int, to_w: int) -> np.nda
         result.append(out)
     return np.array(result)
 
-
-BACKGROUND = [0, 0, 0]
-LOWER = [255, 96, 55]
-MIDDLE = [221, 255, 51]
-RIVET = [61, 245, 61]
-UPPER = [61, 61, 245]
-COLOUR_NAMES = {
-    "BACKGROUND": BACKGROUND,
-    "LOWER": LOWER,
-    "MIDDLE": MIDDLE,
-    "RIVET": RIVET,
-    "UPPER": UPPER,
-    }
-RIVET_DIAMETER = 7.75
 
 def colour_quantisation(arr_original):
     arr = deepcopy(arr_original)

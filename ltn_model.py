@@ -78,17 +78,18 @@ class CustomDDPM(L.LightningModule):
         real_image, categorical_conds, continuous_conds = self.unfold_batch(batch)
         real_image = real_image.to(dtype=torch.uint8, device=self.device)
         fake_image = self(real_image.shape[0], categorical_conds, continuous_conds, to_save_fig=False)
-        fake_image = torch.stack([
-            torch.from_numpy(
-                colour_quantisation(
-                    denormalise_from_minus_one_to_255(f_img)
-                    .cpu()
-                    .permute(1, 2, 0)
-                    .numpy()
-                )
-            ).permute(2, 0, 1)
-            for f_img in fake_image
-        ]).to(dtype=torch.uint8, device=self.device)
+        # fake_image = torch.stack([
+        #     torch.from_numpy(
+        #         colour_quantisation(
+        #             denormalise_from_minus_one_to_255(f_img)
+        #             .cpu()
+        #             .permute(1, 2, 0)
+        #             .numpy()
+        #         )
+        #     ).permute(2, 0, 1)
+        #     for f_img in fake_image
+        # ]).to(dtype=torch.uint8, device=self.device)
+        fake_image = torch.Tensor(fake_image.transpose(0, 3, 1, 2)).to(dtype=torch.uint8, device=self.device)
 
         fid = get_fid(fake_image, real_image, self.device)
         self.log("val_fid", fid, prog_bar=True, on_epoch=True, sync_dist=True)
@@ -145,7 +146,13 @@ class CustomDDPM(L.LightningModule):
             # if OOM occurs... at least try...
             # del outs
             # torch.cuda.empty_cache()
-            
+        
+        # image to numpy array with shape of (H, W, 3)
+        # # 1. 3-channel input + 3-channel output
+        # outs = normalise_to_zero_and_one_from_minus_one(batch_outs)
+        # 2. 1-channel input + 1-channel output
+        image = convert_1_channel_to_3_channel_batch(image)
+
         if to_save_fig:
             self.save_generated_image(image)
         return image
@@ -197,8 +204,7 @@ class CustomDDPM(L.LightningModule):
         return image, categorical_conds, continuous_conds
     
     def save_generated_image(self, batch_outs):
-        outs = normalise_to_zero_and_one_from_minus_one(batch_outs)
-        outs = resize_to_original_ratio(outs, self.inference_height, self.inference_width)
+        outs = resize_to_original_ratio(batch_outs, self.inference_height, self.inference_width)
         save_image(outs)
     
 if __name__ == "__main__":

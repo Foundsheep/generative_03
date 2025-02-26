@@ -164,3 +164,4 @@ cython_debug/
 202*
 .venv*
 notebooks/
+spr_datasets/
