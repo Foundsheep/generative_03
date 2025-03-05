@@ -33,8 +33,8 @@ class CustomDDPM(L.LightningModule):
         self.unet_block_out_channels=unet_block_out_channels
         
         self.unet = UNet2DModel(
-            in_channels=1,
-            out_channels=1,
+            in_channels=3,
+            out_channels=3,
             sample_size=self.unet_sample_size,
             block_out_channels=self.unet_block_out_channels,
             num_continuous_class_embeds=self.num_continuous_class_embeds,
@@ -80,18 +80,8 @@ class CustomDDPM(L.LightningModule):
         real_image, categorical_conds, continuous_conds = self.unfold_batch(batch)
         real_image = real_image.to(dtype=torch.uint8, device=self.device)
         fake_image = self(real_image.shape[0], categorical_conds, continuous_conds, to_save_fig=False)
-        # fake_image = torch.stack([
-        #     torch.from_numpy(
-        #         colour_quantisation(
-        #             denormalise_from_minus_one_to_255(f_img)
-        #             .cpu()
-        #             .permute(1, 2, 0)
-        #             .numpy()
-        #         )
-        #     ).permute(2, 0, 1)
-        #     for f_img in fake_image
-        # ]).to(dtype=torch.uint8, device=self.device)
-        fake_image = torch.Tensor(fake_image.transpose(0, 3, 1, 2)).to(dtype=torch.uint8, device=self.device)
+        # # --- for 1-channel output experiment
+        # fake_image = torch.Tensor(fake_image.transpose(0, 3, 1, 2)).to(dtype=torch.uint8, device=self.device)
 
         fid = get_fid(fake_image, real_image, self.device)
         self.log("val_fid", fid, prog_bar=True, on_epoch=True, sync_dist=True)
@@ -126,7 +116,7 @@ class CustomDDPM(L.LightningModule):
     def forward(self, batch_size, categorical_conds, continuous_conds, to_save_fig=True):
         self.inference_scheduler.set_timesteps(self.inference_num_steps)
         
-        image = torch.randn(
+        images = torch.randn(
             (
                 batch_size,
                 3,
@@ -138,26 +128,43 @@ class CustomDDPM(L.LightningModule):
         
         for t in tqdm(self.inference_scheduler.timesteps):
             outs = self.unet(
-                sample=image, 
+                sample=images, 
                 timestep=t, 
                 multi_class_labels=categorical_conds, 
                 continuous_class_labels=continuous_conds,
             )
-            image = self.inference_scheduler.step(outs.sample, t, image).prev_sample
+            images = self.inference_scheduler.step(outs.sample, t, images).prev_sample
 
             # if OOM occurs... at least try...
             # del outs
             # torch.cuda.empty_cache()
         
         # image to numpy array with shape of (H, W, 3)
-        # # 1. 3-channel input + 3-channel output
-        # outs = normalise_to_zero_and_one_from_minus_one(batch_outs)
-        # 2. 1-channel input + 1-channel output
-        image = convert_1_channel_to_3_channel_batch(image)
+        # 3-channel output
+        images = normalise_to_zero_and_one_from_minus_one(images)
+        images = torch.stack([
+            colour_quantisation(denormalise_from_minus_one_to_255(img)) 
+            for img in images
+        ]).to(dtype=torch.uint8, device=self.device)
+        
+        # images = torch.stack([
+        #     torch.from_numpy(
+        #         colour_quantisation(
+        #             denormalise_from_minus_one_to_255(img)
+        #             .cpu()
+        #             .permute(1, 2, 0)
+        #             .numpy()
+        #         )
+        #     ).permute(2, 0, 1)
+        #     for img in images
+        # ]).to(dtype=torch.uint8, device=self.device)
+                
+        # # 2. 1-channel input + 1-channel output
+        # image = convert_1_channel_to_3_channel_batch(image)
 
         if to_save_fig:
-            self.save_generated_image(image)
-        return image
+            self.save_generated_image(images)
+        return images
     
     def configure_callbacks(self):
         checkpoint_save_last = ModelCheckpoint(

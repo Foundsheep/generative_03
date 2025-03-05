@@ -29,8 +29,8 @@ class CustomDS(torch.utils.data.Dataset):
         lower_thickness = self.ds[idx]["lower_thickness"]
         head_height = self.ds[idx]["head_height"]
 
-        # image from 3 channel to 1 channel
-        image = convert_3_channel_to_1_channel(image)
+        # # image from 3 channel to 1 channel
+        # image = convert_3_channel_to_1_channel(image)
         
         # transform
         image =  self.transforms["image"]["train"](image=np.array(image))[
@@ -70,10 +70,10 @@ class CustomDM(L.LightningDataModule):
         
     def setup(self, stage):
         if self.is_full_data:
-            self.ds_train = CustomDS(self.dataset_repo, self.height, self.width, self.plate_dict_path)
+            self.ds_train = CustomDS(self.dataset_repo, self.height, self.width, self.plate_dict_path, "train[:30]+train[200:230]")
             
             # originally [90%:]. However, changed it to the front data to see how it works in a 2-plated combination in logs.
-            self.ds_val = CustomDS(self.dataset_repo, self.height, self.width, self.plate_dict_path, "train[:1%]")
+            self.ds_val = CustomDS(self.dataset_repo, self.height, self.width, self.plate_dict_path, "train[5:7]+train[225:227]")
         else:
             self.ds_train = CustomDS(self.dataset_repo, self.height, self.width, self.plate_dict_path, "train[:90%]")
             self.ds_val = CustomDS(self.dataset_repo, self.height, self.width, self.plate_dict_path, "train[90%:]")

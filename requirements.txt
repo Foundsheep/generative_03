@@ -98,6 +98,7 @@ tensorboard==2.18.0
 tensorboard-data-server==0.7.2
 tifffile==2025.2.18
 torch==2.5.1
+torch-fidelity==0.3.0
 torcheval==0.0.7
 torchmetrics==1.6.0
 torchvision==0.20.1

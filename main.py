@@ -35,7 +35,7 @@ def train(args):
         default_root_dir=train_log_dir,
         fast_dev_run=args.fast_dev_run,
         strategy="ddp_find_unused_parameters_true",
-        check_val_every_n_epoch=50
+        check_val_every_n_epoch=200
     )
 
     if args.resume_training:
