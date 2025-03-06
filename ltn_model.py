@@ -141,7 +141,7 @@ class CustomDDPM(L.LightningModule):
         
         # image to numpy array with shape of (H, W, 3)
         # 3-channel output
-        images = normalise_to_zero_and_one_from_minus_one(images)
+        # images = normalise_to_zero_and_one_from_minus_one(images)
         images = torch.stack([
             colour_quantisation(denormalise_from_minus_one_to_255(img)) 
             for img in images

@@ -14,7 +14,7 @@ from args_default import Config
 
 BACKGROUND = [0, 0, 0]
 RIVET = [61, 245, 61]
-UPPER = [61, 61, 245]
+UPPER = [61, 61, 245] 
 MIDDLE = [221, 255, 51]
 LOWER = [255, 96, 55]
 COLOUR_ORDER = [BACKGROUND, RIVET, UPPER, MIDDLE, LOWER]
