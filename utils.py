@@ -72,7 +72,7 @@ def get_transforms(height: int, width: int, plate_dict_path: str):
                     # other values from those already in the image
                     A.Resize(height=height, width=width, interpolation=0),
                     # A.Normalize(mean=0.5, std=0.5), # make a range of [-1, 1]
-                    A.Normalize(mean=0.0, std=1.0), # make a range of [0, 1]
+                    # A.Normalize(mean=0.0, std=1.0), # make a range of [0, 1]
                     ToTensorV2(),
                 ]
             ),
@@ -83,7 +83,7 @@ def get_transforms(height: int, width: int, plate_dict_path: str):
                     # other values from those already in the image
                     A.Resize(height=height, width=width, interpolation=0),
                     # A.Normalize(mean=0.5, std=0.5), # make a range of [-1, 1]
-                    A.Normalize(mean=0.0, std=1.0), # make a range of [0, 1]
+                    # A.Normalize(mean=0.0, std=1.0), # make a range of [0, 1]
                     ToTensorV2(),
                 ]
             ),
@@ -125,20 +125,20 @@ def convert_3_channel_to_1_channel(img):
             continue
         x, y = np.where(np.all(img == colour, axis=-1))
         canvas[x, y] = idx
-    return np.expand_dims(canvas, axis=0)
+    return np.expand_dims(canvas, axis=2).astype(np.float32)
 
-def convert_1_channel_to_3_channel(img):
+def convert_1_channel_to_3_channel(img: torch.Tensor) -> torch.Tensor:
     if isinstance(img, np.ndarray):
         img = torch.Tensor(img.transpose(2, 0, 1))
         
     if img.dim() == 3 and img.shape[0] == 1:
         img = img.squeeze()
-    revert = torch.zeros((3, img.shape[0], img.shape[1]))
+    revert = torch.zeros((3, img.shape[0], img.shape[1])).to(device=img.device)
     for idx, colour in enumerate(COLOUR_ORDER):
         if idx == 0:
             continue
         x, y = torch.where(img == idx)
-        revert[x, y] = torch.Tensor(colour).to(device=img.device)
+        revert[:, x, y] = torch.Tensor(colour).unsqueeze(dim=1).to(device=img.device)
     return revert
 
 def convert_1_channel_to_3_channel_batch(batch, to_numpy=True):
@@ -146,7 +146,7 @@ def convert_1_channel_to_3_channel_batch(batch, to_numpy=True):
     for img in batch:
         img = convert_1_channel_to_3_channel(img)
         if to_numpy:
-            img = img.permute(1, 2, 0).nupmy()
+            img = img.permute(1, 2, 0).cpu().numpy()
         result.append(img)
 
     if to_numpy:

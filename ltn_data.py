@@ -4,7 +4,7 @@ from datasets import load_dataset
 import numpy as np
 from PIL import Image
 
-from utils import get_transforms, convert_3_channel_to_1_channel
+from utils import get_transforms, convert_3_channel_to_1_channel, minmax_normalise
 from args_default import Config
 
 class CustomDS(torch.utils.data.Dataset):
@@ -29,8 +29,9 @@ class CustomDS(torch.utils.data.Dataset):
         lower_thickness = self.ds[idx]["lower_thickness"]
         head_height = self.ds[idx]["head_height"]
 
-        # # image from 3 channel to 1 channel
-        # image = convert_3_channel_to_1_channel(image)
+        # image from 3 channel to 1 channel
+        image = convert_3_channel_to_1_channel(image)
+        image = minmax_normalise(image)
         
         # transform
         image =  self.transforms["image"]["train"](image=np.array(image))[

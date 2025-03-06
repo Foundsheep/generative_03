@@ -34,8 +34,8 @@ class CustomDDPM(L.LightningModule):
         self.unet_block_out_channels=unet_block_out_channels
         
         self.unet = UNet2DModel(
-            in_channels=3,
-            out_channels=3,
+            in_channels=1,
+            out_channels=1,
             sample_size=self.unet_sample_size,
             block_out_channels=self.unet_block_out_channels,
             num_continuous_class_embeds=self.num_continuous_class_embeds,
@@ -81,24 +81,29 @@ class CustomDDPM(L.LightningModule):
         return self.shared_step(batch, "train")
     
     def validation_step(self, batch, batch_idx):
-        real_image, categorical_conds, continuous_conds = self.unfold_batch(batch)
-        real_image = real_image.to(dtype=torch.uint8, device=self.device)
-        fake_image = self(real_image.shape[0], categorical_conds, continuous_conds, to_save_fig=False)
+        real_images, categorical_conds, continuous_conds = self.unfold_batch(batch)
+        real_images = real_images.to(dtype=torch.uint8, device=self.device)
+        fake_images = self(real_images.shape[0], categorical_conds, continuous_conds, to_save_fig=False)
         # # --- for 1-channel output experiment
         # fake_image = torch.Tensor(fake_image.transpose(0, 3, 1, 2)).to(dtype=torch.uint8, device=self.device)
 
-        fid = get_fid(fake_image, real_image, self.device)
-        self.log("val_fid", fid, prog_bar=True, on_epoch=True, sync_dist=True)
+        # # fid cannot be calculated on 1-channel image, since it uses the pre-trained Inception model
+        # fid = get_fid(fake_image, real_image, self.device)
+        # self.log("val_fid", fid, prog_bar=True, on_epoch=True, sync_dist=True)
         
-        fake_image = normalise_to_zero_and_one_from_255(fake_image).to(dtype=torch.float32)
-        real_image = normalise_to_zero_and_one_from_255(real_image).to(dtype=torch.float32)
-        loss = self.loss_fn(fake_image.to(dtype=torch.float32), real_image.to(dtype=torch.float32))
+        loss = self.loss_fn(fake_images.to(dtype=torch.float32), real_images.to(dtype=torch.float32))
         self.log("val_loss", loss, prog_bar=True, on_epoch=True, sync_dist=True)
 
+
         # log image
+        fake_images = convert_1_channel_to_3_channel_batch(fake_images, to_numpy=False)
+        fake_images = normalise_to_zero_and_one_from_255(fake_images).to(dtype=torch.float32)
+        real_images = convert_1_channel_to_3_channel_batch(real_images, to_numpy=False)
+        real_images = normalise_to_zero_and_one_from_255(real_images).to(dtype=torch.float32)
+
         tb = self.logger.experiment
-        grid_fake = torchvision.utils.make_grid(fake_image)
-        grid_real = torchvision.utils.make_grid(real_image)
+        grid_fake = torchvision.utils.make_grid(fake_images)
+        grid_real = torchvision.utils.make_grid(real_images)
         tb.add_image(
             "val_samples",
             grid_fake,
@@ -124,7 +129,7 @@ class CustomDDPM(L.LightningModule):
         images = torch.randn(
             (
                 batch_size,
-                3,
+                1,
                 self.unet_sample_size[0],
                 self.unet_sample_size[1]
             ),
@@ -145,27 +150,14 @@ class CustomDDPM(L.LightningModule):
             # torch.cuda.empty_cache()
         
         # image to numpy array with shape of (H, W, 3)
-        # 3-channel output
-        # images = normalise_to_zero_and_one_from_minus_one(images)
-        images = torch.stack([
-            colour_quantisation(denormalise_from_zero_one_to_255(img)) 
-            for img in images
-        ]).to(dtype=torch.uint8, device=self.device)
-        
+        # # 3-channel output
         # images = torch.stack([
-        #     torch.from_numpy(
-        #         colour_quantisation(
-        #             denormalise_from_minus_one_to_255(img)
-        #             .cpu()
-        #             .permute(1, 2, 0)
-        #             .numpy()
-        #         )
-        #     ).permute(2, 0, 1)
+        #     colour_quantisation(denormalise_from_zero_one_to_255(img)) 
         #     for img in images
         # ]).to(dtype=torch.uint8, device=self.device)
-                
+        
         # # 2. 1-channel input + 1-channel output
-        # image = convert_1_channel_to_3_channel_batch(image)
+        # images = convert_1_channel_to_3_channel_batch(images, to_numpy=False)
 
         if to_save_fig:
             self.save_generated_image(images)
