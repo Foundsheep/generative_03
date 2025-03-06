@@ -97,9 +97,9 @@ class CustomDDPM(L.LightningModule):
 
         # log image
         fake_images = convert_1_channel_to_3_channel_batch(fake_images, to_numpy=False)
-        fake_images = normalise_to_zero_and_one_from_255(fake_images).to(dtype=torch.float32)
+        fake_images = denormalise_to_zero_and_one_from_255(fake_images).to(dtype=torch.float32)
         real_images = convert_1_channel_to_3_channel_batch(real_images, to_numpy=False)
-        real_images = normalise_to_zero_and_one_from_255(real_images).to(dtype=torch.float32)
+        real_images = denormalise_to_zero_and_one_from_255(real_images).to(dtype=torch.float32)
 
         tb = self.logger.experiment
         grid_fake = torchvision.utils.make_grid(fake_images)
