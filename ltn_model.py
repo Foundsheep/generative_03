@@ -143,7 +143,7 @@ class CustomDDPM(L.LightningModule):
         # 3-channel output
         # images = normalise_to_zero_and_one_from_minus_one(images)
         images = torch.stack([
-            colour_quantisation(denormalise_from_minus_one_to_255(img)) 
+            colour_quantisation(denormalise_from_zero_one_to_255(img)) 
             for img in images
         ]).to(dtype=torch.uint8, device=self.device)
         
