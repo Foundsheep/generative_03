@@ -5,6 +5,7 @@ from lightning.pytorch.callbacks import ModelCheckpoint
 from diffusers import UNet2DModel
 from utils import *
 from tqdm import tqdm
+import time
 
 class CustomDDPM(L.LightningModule):
     def __init__(
@@ -61,16 +62,19 @@ class CustomDDPM(L.LightningModule):
         timestep = torch.randint(self.train_scheduler.config.num_train_timesteps, (image.size(0), ), device=self.device)
         noisy_image = self.train_scheduler.add_noise(image, noise, timestep)
         
+        start = time.time()
         outputs = self.unet(
             sample=noisy_image,
             timestep=timestep,
             multi_class_labels=categorical_conds,
             continuous_class_labels=continuous_conds
         )
+        elapsed = time.time() - start
         residual = outputs.sample
         
         loss = self.loss_fn(residual, noise)
         self.log(f"{stage}_loss", loss, prog_bar=True, on_epoch=True, on_step=True, sync_dist=True)
+        self.log(f"{stage}_time_sec", elapsed, on_epoch=True, on_step=True, sync_dist=True)
         return loss
         
     def training_step(self, batch, batch_idx):
