@@ -105,7 +105,8 @@ class CustomDDPM(L.LightningModule):
             grid_real,
             self.global_step,
         )
-        return 
+        
+        return loss
         
     def configure_optimizers(self):
         return {
