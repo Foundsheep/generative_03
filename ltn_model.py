@@ -221,13 +221,7 @@ class CustomDDPM(L.LightningModule):
         
         # plate_count removed for its redundancy
         continuous_conds = torch.stack([upper_thickness, lower_thickness, middle_thickness, head_height], axis=1)
-        # continuous_conds = torch.stack([plate_count, upper_thickness, lower_thickness, middle_thickness, head_height])
-        
-        print("111111111")
-        print(f"{image.shape}")
-        print(f"{categorical_conds.shape}")
-        print(f"{continuous_conds.shape}")
-        
+        # continuous_conds = torch.stack([plate_count, upper_thickness, lower_thickness, middle_thickness, head_height])        
         return image, categorical_conds, continuous_conds
     
     def save_generated_image(self, batch_outs):
