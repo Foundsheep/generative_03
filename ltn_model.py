@@ -48,7 +48,11 @@ class CustomDDPM(L.LightningModule):
         self.inference_batch_size = inference_batch_size
         self.inference_height = inference_height
         self.inference_width = inference_width
+        
         self.optimizer = torch.optim.AdamW(self.unet.parameters(), lr=lr)
+        # # changed for sparse gradient
+        # # https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html
+        # self.optimizer = torch.optim.SGD(self.unet.parameters(), lr=lr)
         self.lr_scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, 1, gamma=0.99)
         self.loss_fn = torch.nn.functional.mse_loss
         self.is_train = is_train
@@ -211,7 +215,9 @@ class CustomDDPM(L.LightningModule):
         lower_thickness = batch["lower_thickness"]
         head_height = batch["head_height"]
         
-        categorical_conds = torch.stack([rivet, die, upper_type, lower_type, middle_type], axis=1)
+        # categorical_conds should have a shape of (N of conds, BS)
+        # since it goes into the embedding layer in for loop. e.g.) for c in conds: em_layer[i](c)
+        categorical_conds = torch.stack([rivet, die, upper_type, lower_type, middle_type], axis=0)
         
         # plate_count removed for its redundancy
         continuous_conds = torch.stack([upper_thickness, lower_thickness, middle_thickness, head_height], axis=1)
