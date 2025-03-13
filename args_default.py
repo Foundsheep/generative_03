@@ -2,12 +2,12 @@ from pathlib import Path
 
 
 class Config:
-    NONE_TENSOR_VALUE = -1
+    NONE_TENSOR_VALUE = -3
     PLATE_DICT_PATH = "./plate_dict.json"
-    NUM_CONTINUOUS_CLASS_EMBEDS = 5
+    NUM_CONTINUOUS_CLASS_EMBEDS = 4
     TRAIN_NUM_STEPS = 1000
-    UNET_SAMPLE_SIZE = [240, 320]
-    UNET_BLOCK_OUT_CHANNELS = [32, 64, 128, 256]
+    UNET_SAMPLE_SIZE = [480, 640]
+    UNET_BLOCK_OUT_CHANNELS = [8, 16, 32, 64]
     TRAIN_SCHEDULER_NAME = "DDPMScheduler"
     INFERENCE_SCHEDULER_NAME = "DDPMScheduler"
     INFERENCE_NUM_STEPS = 50
@@ -17,12 +17,13 @@ class Config:
     LR = 0.001
     TRAIN_BATCH_SIZE = 2
     TRAIN_SHUFFLE = True
-    TRAIN_NUM_WORKERS = 8
+    TRAIN_NUM_WORKERS = 32
     TRAIN_LOG_FOLDER = str(Path(__file__).absolute().parent)
-    DATASET_REPO = "DJMOON/hm_spr_01_04_640_480_default"
+    DATASET_REPO = ""
     TRAIN_NUM_GPUS = 2
     MAX_EPOCHS = 10
     MIN_EPOCHS = 1
     LOG_EVERY_N_STEPS = 1
+    CHECK_VAL_EVERY_N_EPOCH = 100
     SEED = 1105
     

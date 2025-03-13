@@ -3,9 +3,6 @@ import lightning as L
 import datetime
 from ltn_data import CustomDM
 from ltn_model import CustomDDPM
-import numpy as np
-import random
-import os
 import yaml
 from utils import get_class_nums, get_transforms
 from args_parse import get_args
@@ -14,6 +11,10 @@ torch.set_float32_matmul_precision("medium")
 
 def train(args):
     timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+    print("**********************************************")
+    print("Args provided as:")
+    print(dict(vars(args)))
+    print("**********************************************")
     
     dm = CustomDM(
         dataset_repo=args.dataset_repo,
@@ -35,7 +36,7 @@ def train(args):
         default_root_dir=train_log_dir,
         fast_dev_run=args.fast_dev_run,
         strategy="ddp_find_unused_parameters_true",
-        check_val_every_n_epoch=50 # TODO: change
+        check_val_every_n_epoch=args.check_val_every_n_epoch
     )
 
     if args.resume_training:
@@ -124,10 +125,15 @@ def predict(args):
         torch.stack([rivet, die, upper_type, middle_type, lower_type])
         .to(device="cuda" if torch.cuda.is_available() else "cpu")
     )
+    # continuous_conds = (
+    #     torch.stack([plate_count, upper_thickness, middle_thickness, lower_thickness, head_height])
+    #     .to(device="cuda" if torch.cuda.is_available() else "cpu")
+    # )
     continuous_conds = (
-        torch.stack([plate_count, upper_thickness, middle_thickness, lower_thickness, head_height])
+        torch.stack([upper_thickness, middle_thickness, lower_thickness, head_height])
         .to(device="cuda" if torch.cuda.is_available() else "cpu")
     )
+
     
     with torch.no_grad():
         model.eval()

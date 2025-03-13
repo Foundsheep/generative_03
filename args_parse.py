@@ -27,6 +27,7 @@ def get_args():
     parser.add_argument("--log_every_n_steps", type=int, default=Config.LOG_EVERY_N_STEPS)
     parser.add_argument("--fast_dev_run", action=argparse.BooleanOptionalAction)
     parser.add_argument("--seed", type=int, default=Config.SEED)
+    parser.add_argument("--check_val_every_n_epoch", type=int, default=Config.CHECK_VAL_EVERY_N_EPOCH)
     
     parser.add_argument("--checkpoint_path", type=str)
     parser.add_argument("--predict", action=argparse.BooleanOptionalAction)

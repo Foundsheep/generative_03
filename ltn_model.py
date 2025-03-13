@@ -34,10 +34,11 @@ class CustomDDPM(L.LightningModule):
         self.unet_block_out_channels=unet_block_out_channels
         
         self.unet = UNet2DModel(
-            in_channels=1,
-            out_channels=1,
+            in_channels=3,
+            out_channels=3,
             sample_size=self.unet_sample_size,
             block_out_channels=self.unet_block_out_channels,
+            norm_num_groups=self.unet_block_out_channels[0],
             num_continuous_class_embeds=self.num_continuous_class_embeds,
             multi_class_nums=self.multi_class_nums
         )
@@ -58,23 +59,25 @@ class CustomDDPM(L.LightningModule):
     def shared_step(self, batch, stage):
         image, categorical_conds, continuous_conds = self.unfold_batch(batch)
         
+        # print("111111111111111111111111")
+        # print(f"image")
+        # # print(f"{torch.unique(images) = }")
+        # print(f"{image.min() = } / {image.max() = }")
+        
         noise = torch.randn_like(image, device=self.device)
         timestep = torch.randint(self.train_scheduler.config.num_train_timesteps, (image.size(0), ), device=self.device)
         noisy_image = self.train_scheduler.add_noise(image, noise, timestep)
         
-        start = time.time()
         outputs = self.unet(
             sample=noisy_image,
             timestep=timestep,
             multi_class_labels=categorical_conds,
             continuous_class_labels=continuous_conds
         )
-        elapsed = time.time() - start
         residual = outputs.sample
         
         loss = self.loss_fn(residual, noise)
         self.log(f"{stage}_loss", loss, prog_bar=True, on_epoch=True, on_step=True, sync_dist=True)
-        self.log(f"{stage}_time_sec", elapsed, on_epoch=True, on_step=True, sync_dist=True)
         return loss
         
     def training_step(self, batch, batch_idx):
@@ -82,25 +85,19 @@ class CustomDDPM(L.LightningModule):
     
     def validation_step(self, batch, batch_idx):
         real_images, categorical_conds, continuous_conds = self.unfold_batch(batch)
-        real_images = real_images.to(dtype=torch.uint8, device=self.device)
         fake_images = self(real_images.shape[0], categorical_conds, continuous_conds, to_save_fig=False)
-        # # --- for 1-channel output experiment
-        # fake_image = torch.Tensor(fake_image.transpose(0, 3, 1, 2)).to(dtype=torch.uint8, device=self.device)
-
-        # # fid cannot be calculated on 1-channel image, since it uses the pre-trained Inception model
-        # fid = get_fid(fake_image, real_image, self.device)
-        # self.log("val_fid", fid, prog_bar=True, on_epoch=True, sync_dist=True)
         
+        # loss is calculated based on the output range [-1, 1]
         loss = self.loss_fn(fake_images.to(dtype=torch.float32), real_images.to(dtype=torch.float32))
         self.log("val_loss", loss, prog_bar=True, on_epoch=True, sync_dist=True)
 
+        # fid is calculated based on the output range [0, 1]
+        real_images = normalise_to_zero_and_one_from_minus_one(real_images)
+        fake_images = normalise_to_zero_and_one_from_minus_one(fake_images)
+        fid = get_fid(fake_images, real_images, self.device)
+        self.log("val_fid", fid, prog_bar=True, on_epoch=True, sync_dist=True)
 
         # log image
-        fake_images = convert_1_channel_to_3_channel_batch(fake_images, to_numpy=False)
-        fake_images = denormalise_to_zero_and_one_from_255(fake_images).to(dtype=torch.float32)
-        real_images = convert_1_channel_to_3_channel_batch(real_images, to_numpy=False)
-        real_images = denormalise_to_zero_and_one_from_255(real_images).to(dtype=torch.float32)
-
         tb = self.logger.experiment
         grid_fake = torchvision.utils.make_grid(fake_images)
         grid_real = torchvision.utils.make_grid(real_images)
@@ -114,7 +111,6 @@ class CustomDDPM(L.LightningModule):
             grid_real,
             self.global_step,
         )
-        
         return loss
         
     def configure_optimizers(self):
@@ -126,15 +122,22 @@ class CustomDDPM(L.LightningModule):
     def forward(self, batch_size, categorical_conds, continuous_conds, to_save_fig=True):
         self.inference_scheduler.set_timesteps(self.inference_num_steps)
         
+        # if [-1, 1] -> torch.randn
+        # if [0, 1] -> torch.rand
         images = torch.randn(
             (
                 batch_size,
-                1,
+                3,
                 self.unet_sample_size[0],
                 self.unet_sample_size[1]
             ),
             device=self.device
         )
+        # print("===============================")
+        # print(f"random noise")
+        # # print(f"{torch.unique(images) = }")
+        # print(f"{images.min() = } / {images.max() = }")
+
         
         for t in tqdm(self.inference_scheduler.timesteps):
             outs = self.unet(
@@ -156,10 +159,14 @@ class CustomDDPM(L.LightningModule):
         #     for img in images
         # ]).to(dtype=torch.uint8, device=self.device)
         
-        # # 2. 1-channel input + 1-channel output
-        # images = convert_1_channel_to_3_channel_batch(images, to_numpy=False)
 
         if to_save_fig:
+            # torch.save(images, "images.pt")
+            # print("!!!!!!!!!!!!!! SAVED !!!!!!!!!!!!")
+            # # 2. 1-channel input + 1-channel output
+            # print("$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+            # print(f"{torch.unique(images) = }")
+            # print(f"{images.min() = } / {images.max() = }")
             self.save_generated_image(images)
         return images
     
@@ -205,12 +212,16 @@ class CustomDDPM(L.LightningModule):
         head_height = batch["head_height"]
         
         categorical_conds = torch.stack([rivet, die, upper_type, lower_type, middle_type])
-        continuous_conds = torch.stack([plate_count, upper_thickness, lower_thickness, middle_thickness, head_height])
+        # continuous_conds = torch.stack([plate_count, upper_thickness, lower_thickness, middle_thickness, head_height])
+        
+        # plate_count removed for its redundancy
+        continuous_conds = torch.stack([upper_thickness, lower_thickness, middle_thickness, head_height])
         
         return image, categorical_conds, continuous_conds
     
     def save_generated_image(self, batch_outs):
         outs = resize_to_original_ratio(batch_outs, self.inference_height, self.inference_width)
+        outs = denormalise_from_zero_one_to_255(outs)
         save_image(outs)
     
 if __name__ == "__main__":

@@ -71,44 +71,44 @@ def get_transforms(height: int, width: int, plate_dict_path: str):
                     # default value is 1(cv2.INTER_LINEAR), which causes the array to have 
                     # other values from those already in the image
                     A.Resize(height=height, width=width, interpolation=0),
-                    # A.Normalize(mean=0.5, std=0.5), # make a range of [-1, 1]
+                    A.Normalize(mean=0.5, std=0.5), # make a range of [-1, 1]
                     # A.Normalize(mean=0.0, std=1.0), # make a range of [0, 1]
                     ToTensorV2(),
                 ]
             ),
             "val": A.Compose(
                 [                  
-                    # interpolation=0 means cv2.INTER_NEAREST.
-                    # default value is 1(cv2.INTER_LINEAR), which causes the array to have 
-                    # other values from those already in the image
                     A.Resize(height=height, width=width, interpolation=0),
-                    # A.Normalize(mean=0.5, std=0.5), # make a range of [-1, 1]
+                    A.Normalize(mean=0.5, std=0.5), # make a range of [-1, 1]
                     # A.Normalize(mean=0.0, std=1.0), # make a range of [0, 1]
                     ToTensorV2(),
                 ]
             ),
         },
+        "plate_count": lambda x: torch.Tensor([normalise_to_minus_one_and_one(x, 2, 3)]),
         # "plate_count": lambda x: torch.Tensor([normalise_to_minus_one_and_one(x, min(plate_dict["plate_count"]), max(plate_dict["plate_count"]))]),
-        "plate_count": lambda x: torch.Tensor([x]).to(dtype=torch.float),
+        # "plate_count": lambda x: torch.Tensor([x]).to(dtype=torch.float),
         "rivet": lambda x: torch.Tensor([plate_dict["rivet"][x]]),
         "die": lambda x: torch.Tensor([plate_dict["die"][x]]),
-        "upper_type": lambda x: torch.Tensor([plate_dict["upper_type"][x]]),
-        # "upper_thickness": lambda x: torch.Tensor([normalise_to_minus_one_and_one(x, min(plate_dict["upper_thickness"]), max(plate_dict["upper_thickness"]))]),
-        "upper_thickness": lambda x: torch.Tensor([x]).to(dtype=torch.float),
+        "upper_type": lambda x: torch.Tensor([plate_dict["plate_name_list"][x]]),
+        "upper_thickness": lambda x: torch.Tensor([normalise_to_minus_one_and_one(x, min(plate_dict["plate_thickness_list"]), max(plate_dict["plate_thickness_list"]))]),
+        # "upper_thickness": lambda x: torch.Tensor([x]).to(dtype=torch.float),
         "middle_type": (
-            lambda x: torch.Tensor([plate_dict["middle_type"][x]])
+            lambda x: torch.Tensor([plate_dict["plate_name_list"][x]])
             if x is not None
-            else torch.Tensor([len(plate_dict["middle_type"])])
+            else torch.Tensor([len(plate_dict["plate_name_list"])])
         ),
         "middle_thickness": (
-            # lambda x: torch.Tensor([normalise_to_minus_one_and_one(x, min(plate_dict["middle_thickness"]), max(plate_dict["middle_thickness"]))])
-            lambda x: torch.Tensor([x]).to(dtype=torch.float)
+            lambda x: torch.Tensor([normalise_to_minus_one_and_one(x, min(plate_dict["plate_thickness_list"]), max(plate_dict["plate_thickness_list"]))])
+            # lambda x: torch.Tensor([x]).to(dtype=torch.float)
             if x is not None
             else torch.Tensor([Config.NONE_TENSOR_VALUE])
         ),
-        "lower_type": lambda x: torch.Tensor([plate_dict["lower_type"][x]]),
-        # "lower_thickness": lambda x: torch.Tensor([normalise_to_minus_one_and_one(x, min(plate_dict["lower_thickness"]), max(plate_dict["lower_thickness"]))]),
-        "lower_thickness": lambda x: torch.Tensor([x]).to(dtype=torch.float),
+        "lower_type": lambda x: torch.Tensor([plate_dict["plate_name_list"][x]]),
+        "lower_thickness": lambda x: torch.Tensor([normalise_to_minus_one_and_one(x, min(plate_dict["plate_thickness_list"]), max(plate_dict["plate_thickness_list"]))]),
+        # "lower_thickness": lambda x: torch.Tensor([x]).to(dtype=torch.float),
+        
+        # head_height is not normalised to [-1, 1], since it's already almost in that range
         # "head_height": lambda x: torch.Tensor([normalise_to_minus_one_and_one(x, min(plate_dict["head_height"]), max(plate_dict["head_height"]))]),
         "head_height": lambda x: torch.Tensor([x]).to(dtype=torch.float),
     }
@@ -126,6 +126,10 @@ def convert_3_channel_to_1_channel(img):
         x, y = np.where(np.all(img == colour, axis=-1))
         canvas[x, y] = idx
     return np.expand_dims(canvas, axis=2).astype(np.float32)
+
+
+def denormalise_to_class_indices(img:torch.Tensor) -> torch.Tensor:
+    return (img.clamp(0, 1) * 4).round()
 
 def convert_1_channel_to_3_channel(img: torch.Tensor) -> torch.Tensor:
     if isinstance(img, np.ndarray):
@@ -150,9 +154,9 @@ def convert_1_channel_to_3_channel_batch(batch, to_numpy=True):
         result.append(img)
 
     if to_numpy:
-        result = np.stack(result, axis=0)
+        result = np.stack(result, axis=0).astype(np.uint8)
     else:
-        result = torch.stack(result, dim=0)
+        result = torch.stack(result, dim=0).to(dtype=torch.uint8)
     return result
 
 def get_class_nums(plate_dict_path):
@@ -160,14 +164,22 @@ def get_class_nums(plate_dict_path):
     
     rivet_num = len(plate_dict["rivet"])
     die_num = len(plate_dict["die"])
-    upper_type_num = len(plate_dict["upper_type"])
-    middle_type_num = len(plate_dict["middle_type"]) + 1
-    lower_type_num = len(plate_dict["lower_type"])
+    
+    # when plate names are shared across the plate types
+    upper_type_num = len(plate_dict["plate_name_list"]) + 1
+    middle_type_num = len(plate_dict["plate_name_list"]) + 1
+    lower_type_num = len(plate_dict["plate_name_list"]) + 1
+
+    # upper_type_num = len(plate_dict["upper_type"])
+    # middle_type_num = len(plate_dict["middle_type"]) + 1
+    # lower_type_num = len(plate_dict["lower_type"])
     return [rivet_num, die_num, upper_type_num, middle_type_num, lower_type_num]
 
-def get_fid(fake_images, real_images, device):
+def get_fid(fake_images:torch.Tensor, real_images:torch.Tensor, device):
     # fid = FrechetInceptionDistance(feature_dim=2048, device="cuda" if torch.cuda.is_available() else "cpu")
-    fid = FrechetInceptionDistance(feature=2048).to(device)
+    
+    # if `normalize=True` it expects tensors ranging [0, 1]
+    fid = FrechetInceptionDistance(feature=2048, normalize=True).to(device)
     fid.update(real_images, real=True)
     fid.update(fake_images, real=False)
     return fid.compute()
@@ -175,7 +187,7 @@ def get_fid(fake_images, real_images, device):
 def normalise_to_zero_and_one_from_minus_one(x: torch.Tensor, to_numpy=False) -> torch.Tensor:
     out = (x / 2 + 0.5).clamp(0, 1)
 
-    out = out.cpu().permute(0, 2, 3, 1).numpy() if to_numpy else out.cpu()
+    out = out.cpu().permute(0, 2, 3, 1).numpy() if to_numpy else out
     return out
 
 def denormalise_to_zero_and_one_from_255(x: torch.Tensor) -> torch.Tensor:
@@ -185,7 +197,9 @@ def save_image(images: np.ndarray) -> None:
     timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
     
     for idx, img in enumerate(images):
-        img = (img * 255).round().astype("uint8")
+        # print("~~~~~~~~~~~~~~~~~~~~~~~~")
+        # print(f"{img.min() = } / {img.max() = }")
+        # print(f"{np.unique(img) = }")
         img_to_save = Image.fromarray(img)
         
         folder_str = f"./{timestamp}_inference"
@@ -303,5 +317,5 @@ def colour_quantisation(tensor_original: torch.Tensor) -> torch.Tensor:
 def denormalise_from_minus_one_to_255(x: torch.Tensor) -> torch.Tensor:
     return ((x + 1) * 127.5).to(dtype=torch.uint8)
 
-def denormalise_from_zero_one_to_255(x: torch.Tensor) -> torch.Tensor:
-    return ((x * 255)).to(dtype=torch.uint8)
+def denormalise_from_zero_one_to_255(x: np.ndarray) -> np.ndarray:
+    return ((x * 255)).round().astype(dtype=np.uint8)
