@@ -110,17 +110,17 @@ class CustomDM(L.LightningDataModule):
     
 def collate_fn(batch):
     return {
-        "image": torch.stack([x[0] for x in batch]),
-        "plate_count": torch.stack([x[1] for x in batch]),
-        "rivet": torch.stack([x[2] for x in batch]),
-        "die": torch.stack([x[3] for x in batch]),
-        "upper_type": torch.stack([x[4] for x in batch]),
-        "upper_thickness": torch.stack([x[5] for x in batch]),
-        "middle_type": torch.stack([x[6] for x in batch]),
-        "middle_thickness": torch.stack([x[7] for x in batch]),
-        "lower_type": torch.stack([x[8] for x in batch]),
-        "lower_thickness": torch.stack([x[9] for x in batch]),
-        "head_height": torch.stack([x[10] for x in batch]),
+        "image": torch.stack([x[0] for x in batch]).squeeze(),
+        "plate_count": torch.stack([x[1] for x in batch]).squeeze(),
+        "rivet": torch.stack([x[2] for x in batch]).squeeze(),
+        "die": torch.stack([x[3] for x in batch]).squeeze(),
+        "upper_type": torch.stack([x[4] for x in batch]).squeeze(),
+        "upper_thickness": torch.stack([x[5] for x in batch]).squeeze(),
+        "middle_type": torch.stack([x[6] for x in batch]).squeeze(),
+        "middle_thickness": torch.stack([x[7] for x in batch]).squeeze(),
+        "lower_type": torch.stack([x[8] for x in batch]).squeeze(),
+        "lower_thickness": torch.stack([x[9] for x in batch]).squeeze(),
+        "head_height": torch.stack([x[10] for x in batch]).squeeze(),
     }
 
 if __name__ == "__main__":
