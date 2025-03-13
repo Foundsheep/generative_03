@@ -73,10 +73,10 @@ class CustomDM(L.LightningDataModule):
         
     def setup(self, stage):
         if self.is_full_data:
-            self.ds_train = CustomDS(self.dataset_repo, self.height, self.width, self.plate_dict_path, "train[:2]")
+            self.ds_train = CustomDS(self.dataset_repo, self.height, self.width, self.plate_dict_path, "train")
             
             # originally [90%:]. However, changed it to the front data to see how it works in a 2-plated combination in logs.
-            self.ds_val = CustomDS(self.dataset_repo, self.height, self.width, self.plate_dict_path, "train[:2]")
+            self.ds_val = CustomDS(self.dataset_repo, self.height, self.width, self.plate_dict_path, "train")
         else:
             self.ds_train = CustomDS(self.dataset_repo, self.height, self.width, self.plate_dict_path, "train[:90%]")
             self.ds_val = CustomDS(self.dataset_repo, self.height, self.width, self.plate_dict_path, "train[90%:]")
