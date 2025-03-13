@@ -88,15 +88,15 @@ def get_transforms(height: int, width: int, plate_dict_path: str):
         "plate_count": lambda x: torch.Tensor([normalise_to_minus_one_and_one(x, 2, 3)]),
         # "plate_count": lambda x: torch.Tensor([normalise_to_minus_one_and_one(x, min(plate_dict["plate_count"]), max(plate_dict["plate_count"]))]),
         # "plate_count": lambda x: torch.Tensor([x]).to(dtype=torch.float),
-        "rivet": lambda x: torch.Tensor([plate_dict["rivet"][x]]),
-        "die": lambda x: torch.Tensor([plate_dict["die"][x]]),
-        "upper_type": lambda x: torch.Tensor([plate_dict["plate_name_list"][x]]),
+        "rivet": lambda x: torch.Tensor([plate_dict["rivet"][x]]).long(),
+        "die": lambda x: torch.Tensor([plate_dict["die"][x]]).long(),
+        "upper_type": lambda x: torch.Tensor([plate_dict["plate_name_list"][x]]).long(),
         "upper_thickness": lambda x: torch.Tensor([normalise_to_minus_one_and_one(x, min(plate_dict["plate_thickness_list"]), max(plate_dict["plate_thickness_list"]))]),
         # "upper_thickness": lambda x: torch.Tensor([x]).to(dtype=torch.float),
         "middle_type": (
-            lambda x: torch.Tensor([plate_dict["plate_name_list"][x]])
+            lambda x: torch.Tensor([plate_dict["plate_name_list"][x]]).long()
             if x is not None
-            else torch.Tensor([len(plate_dict["plate_name_list"])])
+            else torch.Tensor([len(plate_dict["plate_name_list"])]).long()
         ),
         "middle_thickness": (
             lambda x: torch.Tensor([normalise_to_minus_one_and_one(x, min(plate_dict["plate_thickness_list"]), max(plate_dict["plate_thickness_list"]))])
@@ -104,7 +104,7 @@ def get_transforms(height: int, width: int, plate_dict_path: str):
             if x is not None
             else torch.Tensor([Config.NONE_TENSOR_VALUE])
         ),
-        "lower_type": lambda x: torch.Tensor([plate_dict["plate_name_list"][x]]),
+        "lower_type": lambda x: torch.Tensor([plate_dict["plate_name_list"][x]]).long(),
         "lower_thickness": lambda x: torch.Tensor([normalise_to_minus_one_and_one(x, min(plate_dict["plate_thickness_list"]), max(plate_dict["plate_thickness_list"]))]),
         # "lower_thickness": lambda x: torch.Tensor([x]).to(dtype=torch.float),
         
