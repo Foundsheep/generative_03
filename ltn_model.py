@@ -211,11 +211,11 @@ class CustomDDPM(L.LightningModule):
         lower_thickness = batch["lower_thickness"]
         head_height = batch["head_height"]
         
-        categorical_conds = torch.stack([rivet, die, upper_type, lower_type, middle_type])
+        categorical_conds = torch.stack([rivet, die, upper_type, lower_type, middle_type], axis=1)
         # continuous_conds = torch.stack([plate_count, upper_thickness, lower_thickness, middle_thickness, head_height])
         
         # plate_count removed for its redundancy
-        continuous_conds = torch.stack([upper_thickness, lower_thickness, middle_thickness, head_height])
+        continuous_conds = torch.stack([upper_thickness, lower_thickness, middle_thickness, head_height], axis=1)
         
         return image, categorical_conds, continuous_conds
     
