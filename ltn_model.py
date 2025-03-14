@@ -156,21 +156,7 @@ class CustomDDPM(L.LightningModule):
             # del outs
             # torch.cuda.empty_cache()
         
-        # image to numpy array with shape of (H, W, 3)
-        # # 3-channel output
-        # images = torch.stack([
-        #     colour_quantisation(denormalise_from_zero_one_to_255(img)) 
-        #     for img in images
-        # ]).to(dtype=torch.uint8, device=self.device)
-        
-
         if to_save_fig:
-            # torch.save(images, "images.pt")
-            # print("!!!!!!!!!!!!!! SAVED !!!!!!!!!!!!")
-            # # 2. 1-channel input + 1-channel output
-            # print("$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-            # print(f"{torch.unique(images) = }")
-            # print(f"{images.min() = } / {images.max() = }")
             self.save_generated_image(images)
         return images
     
@@ -185,15 +171,6 @@ class CustomDDPM(L.LightningModule):
             every_n_epochs=250,
             filename="{epoch}-{step}-{train_loss:.4f}_per_250"
         )
-        
-        # # this one is causing an error if resuming training
-        # checkpoint_save_top_loss = ModelCheckpoint(
-        #     save_top_k=3,
-        #     monitor="train_loss",
-        #     mode="min",
-        #     every_n_epochs=1,
-        #     filename="{epoch}-{step}-{train_loss:.4f}"
-        # )
         
         return [checkpoint_save_last, checkpoint_save_per_250]
         
@@ -226,7 +203,8 @@ class CustomDDPM(L.LightningModule):
     
     def save_generated_image(self, batch_outs):
         outs = resize_to_original_ratio(batch_outs, self.inference_height, self.inference_width)
-        outs = denormalise_from_zero_one_to_255(outs)
+        outs = denormalise_from_minus_one_to_255(outs)
+        outs = [colour_quantisation_numpy(out) for out in outs]
         save_image(outs)
     
 if __name__ == "__main__":

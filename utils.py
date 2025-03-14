@@ -197,9 +197,6 @@ def save_image(images: np.ndarray) -> None:
     timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
     
     for idx, img in enumerate(images):
-        # print("~~~~~~~~~~~~~~~~~~~~~~~~")
-        # print(f"{img.min() = } / {img.max() = }")
-        # print(f"{np.unique(img) = }")
         img_to_save = Image.fromarray(img)
         
         folder_str = f"./{timestamp}_inference"
@@ -227,53 +224,53 @@ def resize_to_original_ratio(images: torch.Tensor, to_h: int, to_w: int) -> np.n
     return np.array(result)
 
 
-# def colour_quantisation(arr_original: np.ndarray) -> np.ndarray:
-#     arr = deepcopy(arr_original)
-#     colours = [BACKGROUND, LOWER, MIDDLE, RIVET, UPPER]
+def colour_quantisation_numpy(arr_original: np.ndarray) -> np.ndarray:
+    arr = deepcopy(arr_original)
+    colours = [BACKGROUND, LOWER, MIDDLE, RIVET, UPPER]
 
-#     # print(f"...before quantisation: {len(np.unique(arr)) = }")
-#     for w in range(arr.shape[0]):
-#         for h in range(arr.shape[1]):
-#             max_diff = 255 * 3
-#             temp_diff = 0
-#             current_pixel = arr[w, h]
-#             quantised_pixel = [255, 255, 255]
-#             set_channel_idx = None
-#             # print(current_pixel)
+    # print(f"...before quantisation: {len(np.unique(arr)) = }")
+    for w in range(arr.shape[0]):
+        for h in range(arr.shape[1]):
+            max_diff = 255 * 3
+            temp_diff = 0
+            current_pixel = arr[w, h]
+            quantised_pixel = [255, 255, 255]
+            set_channel_idx = None
+            # print(current_pixel)
             
-#             # 있는지 확인
-#             matching_flag = False
-#             for c in colours:
-#                 if (current_pixel == c).all():
-#                     matching_flag = True
-#             if matching_flag:
-#                 continue       
+            # 있는지 확인
+            matching_flag = False
+            for c in colours:
+                if (current_pixel == c).all():
+                    matching_flag = True
+            if matching_flag:
+                continue       
                     
-#             for colour_idx, c in enumerate(colours):
-#                 # print(f"[{COLOUR_NAMES[colour_idx]}] : {c}")
+            for colour_idx, c in enumerate(colours):
+                # print(f"[{COLOUR_NAMES[colour_idx]}] : {c}")
                 
-#                 for channel_idx in range(arr.shape[2]):
-#                     temp_diff += np.abs(int(current_pixel[channel_idx]) - int(c[channel_idx]))                   
+                for channel_idx in range(arr.shape[2]):
+                    temp_diff += np.abs(int(current_pixel[channel_idx]) - int(c[channel_idx]))                   
                 
-#                 if temp_diff == 0:
-#                     continue
+                if temp_diff == 0:
+                    continue
                 
-#                 elif temp_diff < max_diff:
-#                     # print(f"It's smaller!, [{colour_idx}] colour, [{COLOUR_NAMES[colour_idx]}]")
-#                     max_diff = temp_diff
-#                     quantised_pixel = colours[colour_idx]
-#                     set_channel_idx = colour_idx
+                elif temp_diff < max_diff:
+                    # print(f"It's smaller!, [{colour_idx}] colour, [{COLOUR_NAMES[colour_idx]}]")
+                    max_diff = temp_diff
+                    quantised_pixel = colours[colour_idx]
+                    set_channel_idx = colour_idx
                 
-#                 temp_diff = 0
-#                 # print(f"[{max_diff = }]")
-#             arr[w, h] = quantised_pixel
-#             # print(f"before: {current_pixel}, after: {quantised_pixel} -> [{COLOUR_NAMES[set_channel_idx]}]")
+                temp_diff = 0
+                # print(f"[{max_diff = }]")
+            arr[w, h] = quantised_pixel
+            # print(f"before: {current_pixel}, after: {quantised_pixel} -> [{COLOUR_NAMES[set_channel_idx]}]")
 
-#     # print(f"...after quantisation: {len(np.unique(arr)) = }")
-#     return arr
+    # print(f"...after quantisation: {len(np.unique(arr)) = }")
+    return arr
 
 
-def colour_quantisation(tensor_original: torch.Tensor) -> torch.Tensor:
+def colour_quantisation_torch(tensor_original: torch.Tensor) -> torch.Tensor:
     tensor = deepcopy(tensor_original)
     colours = [BACKGROUND, LOWER, MIDDLE, RIVET, UPPER]
 
@@ -314,8 +311,8 @@ def colour_quantisation(tensor_original: torch.Tensor) -> torch.Tensor:
     # print(f"...after quantisation: {len(torch.unique(tensor)) = }")
     return tensor
 
-def denormalise_from_minus_one_to_255(x: torch.Tensor) -> torch.Tensor:
-    return ((x + 1) * 127.5).to(dtype=torch.uint8)
+def denormalise_from_minus_one_to_255(x: np.ndarray) -> np.ndarray:
+    return ((x + 1) * 127.5).astype(np.uint8)
 
 def denormalise_from_zero_one_to_255(x: np.ndarray) -> np.ndarray:
     return ((x * 255)).round().astype(dtype=np.uint8)
