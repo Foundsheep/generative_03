@@ -216,13 +216,10 @@ def resize_to_original_ratio(images: torch.Tensor, to_h: int, to_w: int) -> np.n
     else:
         raise ValueError(f"{images.ndim = }, should be either 3 or 4")
 
-    resize_func = A.Resize(height=to_h, width=to_w, interpolation=0)
-    result = []
-    for img in images:
-        out = resize_func(image=img)["image"]
-        result.append(out)
-    return np.array(result)
-
+    # 아직 digitisation되지 않은 상태이기 때문에 interpolation을 BILINEAR 같은 것으로 해도 무방
+    resize_func = A.Resize(height=to_h, width=to_w)
+    # resize_func = A.Resize(height=to_h, width=to_w, interpolation=0)
+    return np.array([resize_func(image=img)["image"] for img in images])
 
 def colour_quantisation_numpy(arr_original: np.ndarray) -> np.ndarray:
     arr = deepcopy(arr_original)
