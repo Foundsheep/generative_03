@@ -204,7 +204,7 @@ class CustomDDPM(L.LightningModule):
     def save_generated_image(self, batch_outs):
         outs = resize_to_original_ratio(batch_outs, self.inference_height, self.inference_width)
         outs = denormalise_from_minus_one_to_255(outs)
-        outs = [colour_quantisation_numpy(out) for out in outs]
+        # outs = [colour_quantisation_numpy(out) for out in outs]
         save_image(outs)
     
 if __name__ == "__main__":
