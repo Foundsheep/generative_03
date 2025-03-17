@@ -82,12 +82,12 @@ def train(args):
     print("*************** TRAINING DONE ***************")
     print("*********************************************")
     
-    script = model.to_torchscript()
-    script_name = f"{train_log_dir}/gen_model_{timestamp}_epochs{args.max_epochs}.pt"
-    torch.jit.save(script, script_name)
-    print("*************** SCRIPT SAVED ****************")
-    print(script_name)
-    print("*********************************************")
+    # script = model.to_torchscript()
+    # script_name = f"{train_log_dir}/gen_model_{timestamp}_epochs{args.max_epochs}.pt"
+    # torch.jit.save(script, script_name)
+    # print("*************** SCRIPT SAVED ****************")
+    # print(script_name)
+    # print("*********************************************")
         
     
 
