@@ -82,6 +82,14 @@ def train(args):
     print("*************** TRAINING DONE ***************")
     print("*********************************************")
     
+    script = model.to_torchscript()
+    script_name = f"gen_model_{timestamp}_epochs{args.max_epochs}.pt"
+    torch.jit.save(script, script_name)
+    print("*************** SCRIPT SAVED ****************")
+    print(script_name)
+    print("*********************************************")
+        
+    
 
 def predict(args):        
     model = CustomDDPM.load_from_checkpoint(
