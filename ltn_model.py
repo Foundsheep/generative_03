@@ -40,7 +40,8 @@ class CustomDDPM(L.LightningModule):
             block_out_channels=self.unet_block_out_channels,
             norm_num_groups=self.unet_block_out_channels[0],
             num_continuous_class_embeds=self.num_continuous_class_embeds,
-            multi_class_nums=self.multi_class_nums
+            multi_class_nums=self.multi_class_nums,
+            freq_shift=0.0,
         )
         self.train_scheduler = get_scheduler(train_scheduler_name)
         self.inference_scheduler = get_scheduler(inference_scheduler_name)
