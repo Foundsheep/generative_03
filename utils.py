@@ -1,4 +1,4 @@
-from diffusers import DDPMScheduler, DDIMScheduler, DDPMParallelScheduler, DDIMParallelScheduler, AmusedScheduler, DDPMWuerstchenScheduler, DDIMInverseScheduler
+from diffusers import DDPMScheduler, DDIMScheduler, DDPMParallelScheduler, DDIMParallelScheduler, AmusedScheduler, DDPMWuerstchenScheduler, DDIMInverseScheduler, PNDMScheduler
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 from pathlib import Path
@@ -47,6 +47,8 @@ def get_scheduler(scheduler_name):
         scheduler = DDPMWuerstchenScheduler()
     elif scheduler_name == "DDIMInverseScheduler":
         scheduler = DDIMInverseScheduler()
+    elif scheduler_name == "PNDMScheduler":
+        scheduler = PNDMScheduler()
     else:
         raise ValueError(f"scheduler name should be given, but [{scheduler_name = }]")
     return scheduler
