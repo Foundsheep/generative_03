@@ -130,7 +130,7 @@ def predict(args):
     head_height = transforms["head_height"](args.head_height)
     
     categorical_conds = (
-        torch.stack([rivet, die, upper_type, middle_type, lower_type], dim=0)
+        torch.stack([rivet, die, upper_type, lower_type, middle_type], dim=0)
         .to(device="cuda" if torch.cuda.is_available() else "cpu")
     )
     # continuous_conds = (
@@ -138,11 +138,10 @@ def predict(args):
     #     .to(device="cuda" if torch.cuda.is_available() else "cpu")
     # )
     continuous_conds = (
-        torch.stack([upper_thickness, middle_thickness, lower_thickness, head_height], dim=1)
+        torch.stack([upper_thickness, lower_thickness, middle_thickness, head_height], dim=1)
         .to(device="cuda" if torch.cuda.is_available() else "cpu")
     )
 
-    
     with torch.no_grad():
         model.eval()
         out = model(
