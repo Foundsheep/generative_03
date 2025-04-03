@@ -13,10 +13,10 @@ from copy import deepcopy
 from args_default import Config
 
 BACKGROUND = [0, 0, 0]
-RIVET = [61, 245, 61]
-UPPER = [61, 61, 245] 
-MIDDLE = [221, 255, 51]
-LOWER = [255, 96, 55]
+RIVET = [0, 255, 0]
+UPPER = [0, 0, 255] 
+MIDDLE = [255, 255, 0]
+LOWER = [255, 0, 0]
 COLOUR_ORDER = [BACKGROUND, RIVET, UPPER, MIDDLE, LOWER]
 MIN_VAL = 0
 MAX_VAL = len(COLOUR_ORDER) - 1

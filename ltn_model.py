@@ -63,12 +63,6 @@ class CustomDDPM(L.LightningModule):
         
     def shared_step(self, batch, stage):
         image, categorical_conds, continuous_conds = self.unfold_batch(batch)
-        
-        # print("111111111111111111111111")
-        # print(f"image")
-        # # print(f"{torch.unique(images) = }")
-        # print(f"{image.min() = } / {image.max() = }")
-        
         noise = torch.randn_like(image, device=self.device)
         timestep = torch.randint(self.train_scheduler.config.num_train_timesteps, (image.size(0), ), device=self.device)
         noisy_image = self.train_scheduler.add_noise(image, noise, timestep)
@@ -124,7 +118,7 @@ class CustomDDPM(L.LightningModule):
             "lr_scheduler": self.lr_scheduler
         }
     
-    def forward(self, batch_size, categorical_conds, continuous_conds, to_save_fig=True):
+    def forward(self, batch_size, categorical_conds, continuous_conds, do_post_process=False, do_save_fig=True):
         self.inference_scheduler.set_timesteps(self.inference_num_steps)
         
         # if [-1, 1] -> torch.randn
@@ -138,11 +132,6 @@ class CustomDDPM(L.LightningModule):
             ),
             device=self.device
         )
-        # print("===============================")
-        # print(f"random noise")
-        # # print(f"{torch.unique(images) = }")
-        # print(f"{images.min() = } / {images.max() = }")
-
         
         for t in tqdm(self.inference_scheduler.timesteps):
             outs = self.unet(
@@ -154,11 +143,16 @@ class CustomDDPM(L.LightningModule):
             images = self.inference_scheduler.step(outs.sample, t, images).prev_sample
 
             # if OOM occurs... at least try...
-            # del outs
-            # torch.cuda.empty_cache()
+            del outs
+            torch.cuda.empty_cache()
         
-        if to_save_fig:
-            self.save_generated_image(images)
+        if do_post_process:
+            images = resize_to_original_ratio(images, self.inference_height, self.inference_width)
+            images = denormalise_from_minus_one_to_255(images)
+            # images = [colour_quantisation_numpy(img) for out in images]
+
+            if do_save_fig:
+                self.save_generated_image(images)
         return images
     
     def configure_callbacks(self):
@@ -203,10 +197,7 @@ class CustomDDPM(L.LightningModule):
         return image, categorical_conds, continuous_conds
     
     def save_generated_image(self, batch_outs):
-        outs = resize_to_original_ratio(batch_outs, self.inference_height, self.inference_width)
-        outs = denormalise_from_minus_one_to_255(outs)
-        # outs = [colour_quantisation_numpy(out) for out in outs]
-        save_image(outs)
+        save_image(batch_outs)
     
 if __name__ == "__main__":
     ddpm = CustomDDPM(

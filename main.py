@@ -147,7 +147,9 @@ def predict(args):
         out = model(
             batch_size=args.inference_batch_size,
             categorical_conds=categorical_conds,
-            continuous_conds=continuous_conds
+            continuous_conds=continuous_conds,
+            do_post_process=True,
+            do_save_fig=True,
         )
     print("*************** INFERENCE DONE ***************")
     print("**********************************************")
