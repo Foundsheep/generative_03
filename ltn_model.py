@@ -84,7 +84,7 @@ class CustomDDPM(L.LightningModule):
     
     def validation_step(self, batch, batch_idx):
         real_images, categorical_conds, continuous_conds = self.unfold_batch(batch)
-        fake_images = self(real_images.shape[0], categorical_conds, continuous_conds, to_save_fig=False)
+        fake_images = self(real_images.shape[0], categorical_conds, continuous_conds, do_post_process=False, do_save_fig=False)
         
         # loss is calculated based on the output range [-1, 1]
         loss = self.loss_fn(fake_images.to(dtype=torch.float32), real_images.to(dtype=torch.float32))
