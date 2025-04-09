@@ -224,8 +224,11 @@ def resize_to_original_ratio(images: torch.Tensor, to_h: int, to_w: int) -> np.n
     return np.array([resize_func(image=img)["image"] for img in images])
 
 def colour_quantisation_numpy(arr_original: np.ndarray) -> np.ndarray:
+    return np.multiply(np.divide(arr_original, 255).round(), 255).astype(np.uint8)
+
+    arr / 255            
+def colour_quantisation_numpy_before(arr_original: np.ndarray) -> np.ndarray:
     arr = deepcopy(arr_original)
-    colours = [BACKGROUND, LOWER, MIDDLE, RIVET, UPPER]
 
     # print(f"...before quantisation: {len(np.unique(arr)) = }")
     for w in range(arr.shape[0]):
@@ -267,7 +270,6 @@ def colour_quantisation_numpy(arr_original: np.ndarray) -> np.ndarray:
 
     # print(f"...after quantisation: {len(np.unique(arr)) = }")
     return arr
-
 
 def colour_quantisation_torch(tensor_original: torch.Tensor) -> torch.Tensor:
     tensor = deepcopy(tensor_original)
