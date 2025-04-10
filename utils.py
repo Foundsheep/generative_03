@@ -166,16 +166,8 @@ def get_class_nums(plate_dict_path):
     
     rivet_num = len(plate_dict["rivet"])
     die_num = len(plate_dict["die"])
-    
-    # when plate names are shared across the plate types
-    upper_type_num = len(plate_dict["plate_name_list"]) + 1
-    middle_type_num = len(plate_dict["plate_name_list"]) + 1
-    lower_type_num = len(plate_dict["plate_name_list"]) + 1
-
-    # upper_type_num = len(plate_dict["upper_type"])
-    # middle_type_num = len(plate_dict["middle_type"]) + 1
-    # lower_type_num = len(plate_dict["lower_type"])
-    return [rivet_num, die_num, upper_type_num, middle_type_num, lower_type_num]
+    all_type_num = len(plate_dict["plate_name_list"]) + 1
+    return [rivet_num, die_num, all_type_num]
 
 def get_fid(fake_images:torch.Tensor, real_images:torch.Tensor, device):
     # fid = FrechetInceptionDistance(feature_dim=2048, device="cuda" if torch.cuda.is_available() else "cpu")
