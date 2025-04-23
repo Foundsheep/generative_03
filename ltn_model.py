@@ -54,7 +54,7 @@ class CustomDDPM(L.LightningModule):
         # # changed for sparse gradient
         # # https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html
         # self.optimizer = torch.optim.SGD(self.unet.parameters(), lr=lr)
-        self.lr_scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, 1, gamma=0.99)
+        self.lr_scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, 10, gamma=0.99)
         self.loss_fn = torch.nn.functional.mse_loss
         self.is_train = is_train
         
