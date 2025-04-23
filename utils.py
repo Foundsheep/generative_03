@@ -73,6 +73,7 @@ def get_transforms(height: int, width: int, plate_dict_path: str):
                     # default value is 1(cv2.INTER_LINEAR), which causes the array to have 
                     # other values from those already in the image
                     A.Resize(height=height, width=width, interpolation=0),
+                    A.HorizontalFlip(),
                     A.Normalize(mean=0.5, std=0.5), # make a range of [-1, 1]
                     # A.Normalize(mean=0.0, std=1.0), # make a range of [0, 1]
                     ToTensorV2(),
